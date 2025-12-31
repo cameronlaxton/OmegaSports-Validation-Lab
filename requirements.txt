@@ -15,7 +15,7 @@ python-dotenv==1.0.0
 
 # Data Processing
 pyarrow==14.0.1
-openpyxl==3.11.0
+openpyxl>=3.0.0,<4.0.0
 
 # Testing
 pytest==7.4.3
