@@ -3,9 +3,22 @@ Lab configuration management.
 """
 
 import os
+import sys
 from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
+
+# Auto-configure OmegaSports path on config load
+def _setup_omega_path():
+    """Automatically set up OmegaSports path when config is loaded."""
+    omega_path = os.getenv("OMEGA_ENGINE_PATH")
+    if omega_path:
+        omega_path_obj = Path(omega_path)
+        if omega_path_obj.exists():
+            omega_path_str = str(omega_path_obj)
+            # Add to end of sys.path so local omega package takes precedence
+            if omega_path_str not in sys.path:
+                sys.path.append(omega_path_str)
 
 
 class LabConfig:
@@ -27,6 +40,9 @@ class LabConfig:
 
         if Path(env_file).exists():
             load_dotenv(env_file)
+        
+        # Auto-setup OmegaSports path
+        _setup_omega_path()
 
     # Paths
     @property

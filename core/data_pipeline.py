@@ -717,3 +717,52 @@ class DataPipeline:
             prefix: Clear only cache keys with this prefix
         """
         self.cache.clear(prefix)
+    
+    def fetch_and_cache_games(
+        self, sport: str, start_year: int, end_year: int
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetch games from OmegaSports scraper and cache them.
+        
+        Args:
+            sport: Sport name (NBA, NFL, etc.)
+            start_year: Start year (inclusive)
+            end_year: End year (inclusive)
+        
+        Returns:
+            List of all game dictionaries
+        """
+        from omega.scraper_engine import ScraperEngine
+        
+        scraper = ScraperEngine()
+        all_games = []
+        
+        for year in range(start_year, end_year + 1):
+            # Check cache first
+            cache_key = f"omega_games_{sport}_{year}"
+            cached = self.get_cached_data(cache_key)
+            
+            if cached:
+                logger.info(f"Using cached data for {sport} {year}")
+                all_games.extend(cached)
+            else:
+                logger.info(f"Fetching fresh data for {sport} {year}")
+                # Fetch games for the year
+                # Note: Scraper currently fetches upcoming games
+                # For historical data, you may need a different data source
+                start_date = f"{year}-01-01"
+                games = scraper.fetch_games(sport, start_date=start_date, limit=1000)
+                
+                # Filter by year
+                year_games = [
+                    g for g in games 
+                    if g.get('date', '').startswith(str(year))
+                ]
+                
+                if year_games:
+                    # Cache and save
+                    self.cache_data(cache_key, year_games)
+                    self.save_games(year_games, sport, year)
+                    all_games.extend(year_games)
+        
+        return all_games
