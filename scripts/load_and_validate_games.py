@@ -37,7 +37,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('data/logs/load_games.log', mode='a')
+        logging.FileHandler(Path('data/logs/load_games.log'), mode='a')
     ]
 )
 logger = logging.getLogger(__name__)
@@ -83,6 +83,11 @@ def parse_args():
         '--verbose',
         action='store_true',
         help='Enable verbose logging'
+    )
+    parser.add_argument(
+        '--enable-multi-source',
+        action='store_true',
+        help='Enable multi-source data aggregation for enhanced statistics (requires additional API keys)'
     )
     return parser.parse_args()
 
@@ -140,7 +145,17 @@ def load_sport_data(
         # Save games by year
         total_saved = 0
         for year in range(start_year, end_year + 1):
-            year_games = [g for g in games if g['date'].startswith(str(year))]
+            # Filter games by year using proper date parsing
+            year_games = []
+            for g in games:
+                try:
+                    game_year = datetime.fromisoformat(g['date']).year
+                    if game_year == year:
+                        year_games.append(g)
+                except (ValueError, KeyError):
+                    logger.warning(f"Invalid date format in game: {g.get('game_id', 'unknown')}")
+                    continue
+            
             if year_games:
                 saved = pipeline.save_games(year_games, sport, year)
                 total_saved += saved
@@ -170,6 +185,7 @@ def main():
     print(f"End Year: {args.end_year}")
     print(f"Sports: {', '.join(args.sports)}")
     print(f"Minimum Count: {args.min_count}")
+    print(f"Multi-Source Enabled: {args.enable_multi_source}")
     print()
     
     # Initialize components
@@ -178,8 +194,15 @@ def main():
         cache_dir=Path("data/cache"),
         data_dir=Path("data/historical")
     )
-    scraper = HistoricalDataScraper(cache_dir=Path("data/cache"))
+    scraper = HistoricalDataScraper(
+        cache_dir=Path("data/cache"),
+        enable_multi_source=args.enable_multi_source
+    )
     print("✓ Components initialized")
+    if args.enable_multi_source:
+        print("  ℹ Multi-source data aggregation enabled (enhanced statistics)")
+    else:
+        print("  ℹ Using primary ESPN source (use --enable-multi-source for enhanced stats)")
     
     # Load data for each sport
     results = {}

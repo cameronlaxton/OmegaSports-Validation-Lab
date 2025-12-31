@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass
 import requests
 from urllib.parse import urljoin
+from core.multi_source_aggregator import MultiSourceAggregator, validate_not_sample_data
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,12 @@ class HistoricalDataScraper:
     # ESPN API endpoints for historical data
     ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports"
     
+    # Game status constants
+    COMPLETED_GAME_STATUS = "post"
+    
+    # Default betting odds when actual odds not available
+    DEFAULT_ODDS = -110
+    
     # Sport configurations
     SPORT_CONFIG = {
         "NBA": {
@@ -93,12 +100,13 @@ class HistoricalDataScraper:
         },
     }
     
-    def __init__(self, cache_dir: Optional[Path] = None):
+    def __init__(self, cache_dir: Optional[Path] = None, enable_multi_source: bool = False):
         """
         Initialize historical data scraper.
         
         Args:
             cache_dir: Directory for caching API responses
+            enable_multi_source: Enable multi-source data aggregation for enhanced statistics
         """
         self.cache_dir = Path(cache_dir) if cache_dir else Path("./data/cache")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -106,7 +114,21 @@ class HistoricalDataScraper:
         self.session.headers.update({
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         })
-        logger.info(f"HistoricalDataScraper initialized with cache_dir={self.cache_dir}")
+        
+        # Initialize multi-source aggregator if enabled
+        self.enable_multi_source = enable_multi_source
+        self.aggregator = MultiSourceAggregator(cache_dir=cache_dir) if enable_multi_source else None
+        
+        # Statistics tracking
+        self.stats = {
+            "total_games_fetched": 0,
+            "games_with_full_stats": 0,
+            "games_failed_validation": 0,
+            "api_calls_made": 0,
+            "cache_hits": 0,
+        }
+        
+        logger.info(f"HistoricalDataScraper initialized with cache_dir={self.cache_dir}, multi_source={enable_multi_source}")
     
     def fetch_historical_games(
         self,
@@ -143,6 +165,7 @@ class HistoricalDataScraper:
             time.sleep(0.5)
         
         logger.info(f"Total games fetched for {sport}: {len(all_games)}")
+        logger.info(f"Scraper statistics: {self.stats}")
         return all_games
     
     def _fetch_season_games(
@@ -180,19 +203,41 @@ class HistoricalDataScraper:
         while current_date <= season_end:
             chunk_end = min(current_date + timedelta(days=chunk_days), season_end)
             
-            # Try to fetch from cache first
-            cache_key = f"{sport}_{current_date.strftime('%Y%m%d')}_{chunk_end.strftime('%Y%m%d')}"
+            # Parse ESPN API response
             cached_data = self._get_from_cache(cache_key)
-            
             if cached_data:
                 games.extend(cached_data)
+                self.stats["cache_hits"] += 1
             else:
                 # Fetch from API with retries
                 chunk_games = self._fetch_games_chunk(
                     sport, current_date, chunk_end, max_retries
                 )
-                games.extend(chunk_games)
-                self._save_to_cache(cache_key, chunk_games)
+                
+                # Validate that we're getting real data, not mocked
+                validated_games = []
+                for game in chunk_games:
+                    if validate_not_sample_data(game):
+                        # Optionally enrich with multi-source data
+                        if self.enable_multi_source and self.aggregator:
+                            game = self.aggregator.enrich_game_data(
+                                game,
+                                fetch_advanced_stats=True,
+                                fetch_player_stats=True,
+                                fetch_odds_history=True
+                            )
+                            if game.get("advanced_stats") or game.get("player_stats"):
+                                self.stats["games_with_full_stats"] += 1
+                        
+                        validated_games.append(game)
+                        self.stats["total_games_fetched"] += 1
+                    else:
+                        self.stats["games_failed_validation"] += 1
+                        logger.warning(f"Game failed validation (appears to be sample data): {game.get('game_id')}")
+                
+                games.extend(validated_games)
+                self._save_to_cache(cache_key, validated_games)
+                self.stats["api_calls_made"] += 1
             
             current_date = chunk_end + timedelta(days=1)
             time.sleep(0.3)  # Rate limiting
@@ -209,6 +254,9 @@ class HistoricalDataScraper:
         """
         Fetch games for a specific date range from ESPN API.
         
+        Note: Returns actual game data from ESPN API, including comprehensive
+        statistics when available. Data completeness varies by game and sport.
+        
         Args:
             sport: Sport name
             start_date: Start date
@@ -216,7 +264,7 @@ class HistoricalDataScraper:
             max_retries: Maximum retry attempts
             
         Returns:
-            List of game dictionaries with comprehensive data
+            List of game dictionaries with available comprehensive data
         """
         config = self.SPORT_CONFIG[sport]
         games = []
@@ -274,8 +322,8 @@ class HistoricalDataScraper:
             date = event.get("date", "")
             status = event.get("status", {}).get("type", {}).get("state", "")
             
-            # Only process completed games
-            if status != "post":
+            # Only process completed games with actual results
+            if status != self.COMPLETED_GAME_STATUS:
                 return None
             
             competitions = event.get("competitions", [])
@@ -338,8 +386,8 @@ class HistoricalDataScraper:
                 }
                 game["total"] = {
                     "line": odds_data.get("overUnder"),
-                    "over_odds": -110,  # Standard odds
-                    "under_odds": -110,
+                    "over_odds": self.DEFAULT_ODDS,
+                    "under_odds": self.DEFAULT_ODDS,
                 }
             
             # Add team statistics if available
@@ -431,5 +479,12 @@ class HistoricalDataScraper:
             "date_range": {
                 "start": min([g["date"] for g in games]) if games else None,
                 "end": max([g["date"] for g in games]) if games else None,
+            },
+            "data_quality": {
+                "total_fetched": self.stats["total_games_fetched"],
+                "with_full_stats": self.stats["games_with_full_stats"],
+                "failed_validation": self.stats["games_failed_validation"],
+                "api_calls": self.stats["api_calls_made"],
+                "cache_hits": self.stats["cache_hits"],
             }
         }

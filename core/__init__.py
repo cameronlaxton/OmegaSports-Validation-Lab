@@ -15,6 +15,7 @@ __author__ = "Cameron Laxton"
 
 from core.data_pipeline import DataPipeline
 from core.historical_data_scraper import HistoricalDataScraper
+from core.multi_source_aggregator import MultiSourceAggregator, validate_not_sample_data
 from core.simulation_framework import SimulationFramework
 from core.performance_tracker import PerformanceTracker
 from core.experiment_logger import ExperimentLogger
@@ -23,6 +24,8 @@ from core.statistical_validation import StatisticalValidator
 __all__ = [
     "DataPipeline",
     "HistoricalDataScraper",
+    "MultiSourceAggregator",
+    "validate_not_sample_data",
     "SimulationFramework",
     "PerformanceTracker",
     "ExperimentLogger",
