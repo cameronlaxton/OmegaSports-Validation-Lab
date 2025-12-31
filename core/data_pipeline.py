@@ -3,6 +3,11 @@ Data pipeline for ingesting, validating, and curating sports betting data.
 
 This module provides comprehensive data ingestion from OmegaSports scraper engine,
 with validation, caching, and historical database management.
+
+Supports:
+  - Game-level bets (moneyline, spread, total)
+  - Player props (points, rebounds, assists, passing yards, TDs, etc.)
+  - Multiple sports (NBA, NFL, NCAAB, NCAAF)
 """
 
 import logging
@@ -37,10 +42,33 @@ class GameData:
         return asdict(self)
 
 
-class DataValidator:
-    """Validates game data against schema requirements."""
+@dataclass
+class PlayerPropData:
+    """Structured player prop data."""
 
-    REQUIRED_FIELDS = [
+    prop_id: str
+    game_id: str
+    date: str
+    sport: str
+    player_name: str
+    player_team: str
+    opponent_team: str
+    prop_type: str  # e.g., 'points', 'rebounds', 'passing_yards'
+    over_line: Optional[float] = None
+    under_line: Optional[float] = None
+    over_odds: Optional[float] = None
+    under_odds: Optional[float] = None
+    actual_value: Optional[float] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return asdict(self)
+
+
+class DataValidator:
+    """Validates game data and player prop data against schema requirements."""
+
+    REQUIRED_GAME_FIELDS = [
         "game_id",
         "date",
         "sport",
@@ -49,10 +77,48 @@ class DataValidator:
         "away_team",
     ]
 
+    REQUIRED_PROP_FIELDS = [
+        "prop_id",
+        "game_id",
+        "date",
+        "sport",
+        "player_name",
+        "player_team",
+        "opponent_team",
+        "prop_type",
+    ]
+
     VALID_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF"]
 
+    # Player prop types by sport
+    BASKETBALL_PROPS = [
+        "points",
+        "rebounds",
+        "assists",
+        "threes_made",
+        "steals",
+        "blocks",
+        "points_rebounds",
+        "points_assists",
+        "rebounds_assists",
+    ]
+
+    FOOTBALL_PROPS = [
+        "passing_yards",
+        "rushing_yards",
+        "receiving_yards",
+        "touchdowns",
+        "receptions",
+        "completion_pct",
+        "interceptions",
+        "sacks",
+        "passing_tds",
+        "rushing_tds",
+        "receiving_tds",
+    ]
+
     @classmethod
-    def validate(cls, game: Dict[str, Any]) -> tuple[bool, str]:
+    def validate_game(cls, game: Dict[str, Any]) -> tuple[bool, str]:
         """
         Validate game data.
 
@@ -63,7 +129,7 @@ class DataValidator:
             Tuple of (is_valid, error_message)
         """
         # Check required fields
-        for field in cls.REQUIRED_FIELDS:
+        for field in cls.REQUIRED_GAME_FIELDS:
             if field not in game or game[field] is None:
                 return False, f"Missing required field: {field}"
 
@@ -86,6 +152,49 @@ class DataValidator:
         # Check for duplicate teams
         if game["home_team"].lower() == game["away_team"].lower():
             return False, "home_team and away_team cannot be the same"
+
+        return True, ""
+
+    @classmethod
+    def validate_prop(cls, prop: Dict[str, Any]) -> tuple[bool, str]:
+        """
+        Validate player prop data.
+
+        Args:
+            prop: Player prop data dictionary
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        # Check required fields
+        for field in cls.REQUIRED_PROP_FIELDS:
+            if field not in prop or prop[field] is None:
+                return False, f"Missing required field: {field}"
+
+        # Validate sport
+        if prop["sport"] not in cls.VALID_SPORTS:
+            return False, f"Invalid sport: {prop['sport']}"
+
+        # Validate prop type
+        if prop["sport"] in ["NBA", "NCAAB"]:
+            valid_props = cls.BASKETBALL_PROPS
+        elif prop["sport"] in ["NFL", "NCAAF"]:
+            valid_props = cls.FOOTBALL_PROPS
+        else:
+            return False, f"No prop types defined for {prop['sport']}"
+
+        if prop["prop_type"] not in valid_props:
+            return False, f"Invalid prop type for {prop['sport']}: {prop['prop_type']}"
+
+        # Validate date format
+        try:
+            datetime.strptime(prop["date"], "%Y-%m-%d")
+        except ValueError:
+            return False, f"Invalid date format: {prop['date']}"
+
+        # Validate player name
+        if not isinstance(prop["player_name"], str) or not prop["player_name"]:
+            return False, "player_name must be non-empty string"
 
         return True, ""
 
@@ -178,7 +287,7 @@ class CacheManager:
 
 
 class HistoricalDatabase:
-    """Manages persistent storage of historical game data."""
+    """Manages persistent storage of historical game and player prop data."""
 
     def __init__(self, data_dir: Path):
         """
@@ -191,9 +300,9 @@ class HistoricalDatabase:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"HistoricalDatabase initialized with data_dir={data_dir}")
 
-    def _get_file_path(self, sport: str, year: int) -> Path:
+    def _get_game_file_path(self, sport: str, year: int) -> Path:
         """
-        Get file path for sport/year combination.
+        Get file path for game data by sport/year.
 
         Args:
             sport: Sport name
@@ -202,7 +311,20 @@ class HistoricalDatabase:
         Returns:
             Path to data file
         """
-        return self.data_dir / f"{sport.lower()}_{year}.json"
+        return self.data_dir / f"{sport.lower()}_{year}_games.json"
+
+    def _get_prop_file_path(self, sport: str, year: int) -> Path:
+        """
+        Get file path for player prop data by sport/year.
+
+        Args:
+            sport: Sport name
+            year: Year
+
+        Returns:
+            Path to data file
+        """
+        return self.data_dir / f"{sport.lower()}_{year}_props.json"
 
     def save_games(self, games: List[Dict[str, Any]], sport: str, year: int) -> int:
         """
@@ -216,12 +338,12 @@ class HistoricalDatabase:
         Returns:
             Number of games saved
         """
-        file_path = self._get_file_path(sport, year)
+        file_path = self._get_game_file_path(sport, year)
 
         # Validate all games
         valid_games = []
         for game in games:
-            is_valid, error = DataValidator.validate(game)
+            is_valid, error = DataValidator.validate_game(game)
             if is_valid:
                 valid_games.append(game)
             else:
@@ -237,6 +359,40 @@ class HistoricalDatabase:
 
         logger.info(f"Saved {len(valid_games)} games to {file_path}")
         return len(valid_games)
+
+    def save_props(self, props: List[Dict[str, Any]], sport: str, year: int) -> int:
+        """
+        Save player props to database.
+
+        Args:
+            props: List of player prop dictionaries
+            sport: Sport name
+            year: Year
+
+        Returns:
+            Number of props saved
+        """
+        file_path = self._get_prop_file_path(sport, year)
+
+        # Validate all props
+        valid_props = []
+        for prop in props:
+            is_valid, error = DataValidator.validate_prop(prop)
+            if is_valid:
+                valid_props.append(prop)
+            else:
+                logger.warning(f"Invalid prop data: {error}")
+
+        if not valid_props:
+            logger.warning(f"No valid props to save for {sport} {year}")
+            return 0
+
+        # Save to file
+        with open(file_path, "w") as f:
+            json.dump(valid_props, f, indent=2, default=str)
+
+        logger.info(f"Saved {len(valid_props)} props to {file_path}")
+        return len(valid_props)
 
     def load_games(
         self, sport: str, start_year: int, end_year: int
@@ -255,7 +411,7 @@ class HistoricalDatabase:
         all_games = []
 
         for year in range(start_year, end_year + 1):
-            file_path = self._get_file_path(sport, year)
+            file_path = self._get_game_file_path(sport, year)
             if not file_path.exists():
                 logger.warning(f"No data file found: {file_path}")
                 continue
@@ -271,6 +427,45 @@ class HistoricalDatabase:
         logger.info(f"Total games loaded: {len(all_games)} ({sport}, {start_year}-{end_year})")
         return all_games
 
+    def load_props(
+        self, sport: str, start_year: int, end_year: int, prop_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Load player props from database.
+
+        Args:
+            sport: Sport name
+            start_year: Start year (inclusive)
+            end_year: End year (inclusive)
+            prop_type: Filter by prop type (optional)
+
+        Returns:
+            List of player prop dictionaries
+        """
+        all_props = []
+
+        for year in range(start_year, end_year + 1):
+            file_path = self._get_prop_file_path(sport, year)
+            if not file_path.exists():
+                logger.warning(f"No props file found: {file_path}")
+                continue
+
+            try:
+                with open(file_path, "r") as f:
+                    props = json.load(f)
+                
+                # Filter by prop type if specified
+                if prop_type:
+                    props = [p for p in props if p.get("prop_type") == prop_type]
+                
+                all_props.extend(props)
+                logger.info(f"Loaded {len(props)} props from {file_path}")
+            except Exception as e:
+                logger.error(f"Error loading {file_path}: {e}")
+
+        logger.info(f"Total props loaded: {len(all_props)} ({sport}, {start_year}-{end_year})")
+        return all_props
+
     def game_count(self, sport: str, year: int) -> int:
         """
         Get count of games for sport/year.
@@ -282,7 +477,7 @@ class HistoricalDatabase:
         Returns:
             Number of games
         """
-        file_path = self._get_file_path(sport, year)
+        file_path = self._get_game_file_path(sport, year)
         if not file_path.exists():
             return 0
 
@@ -294,10 +489,43 @@ class HistoricalDatabase:
             logger.error(f"Error counting games in {file_path}: {e}")
             return 0
 
+    def prop_count(self, sport: str, year: int, prop_type: Optional[str] = None) -> int:
+        """
+        Get count of player props for sport/year.
+
+        Args:
+            sport: Sport name
+            year: Year
+            prop_type: Filter by prop type (optional)
+
+        Returns:
+            Number of props
+        """
+        file_path = self._get_prop_file_path(sport, year)
+        if not file_path.exists():
+            return 0
+
+        try:
+            with open(file_path, "r") as f:
+                props = json.load(f)
+            
+            if prop_type:
+                props = [p for p in props if p.get("prop_type") == prop_type]
+            
+            return len(props)
+        except Exception as e:
+            logger.error(f"Error counting props in {file_path}: {e}")
+            return 0
+
 
 class DataPipeline:
     """
     Main data pipeline for ingesting, validating, and curating sports data.
+    
+    Supports:
+      - Game-level bets (moneyline, spread, total)
+      - Player props (points, rebounds, assists, passing yards, etc.)
+      - Multiple sports (NBA, NFL, NCAAB, NCAAF)
     """
 
     def __init__(self, cache_dir: Optional[Path] = None, data_dir: Optional[Path] = None):
@@ -325,9 +553,6 @@ class DataPipeline:
         """
         Fetch historical game data for a sport and year range.
 
-        This fetches from the local database. For fresh data, use
-        fetch_and_save_games() first.
-
         Args:
             sport: Sport name (NBA, NFL, etc.)
             start_year: Start year (inclusive)
@@ -337,13 +562,32 @@ class DataPipeline:
             List of game dictionaries
         """
         logger.info(f"Fetching historical games: {sport} {start_year}-{end_year}")
-
         games = self.database.load_games(sport, start_year, end_year)
         if not games:
             logger.warning(f"No historical games found for {sport}")
-            return []
-
         return games
+
+    def fetch_historical_props(
+        self, sport: str, start_year: int = 2020, end_year: int = 2024,
+        prop_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetch historical player prop data.
+
+        Args:
+            sport: Sport name
+            start_year: Start year (inclusive)
+            end_year: End year (inclusive)
+            prop_type: Filter by prop type (optional)
+
+        Returns:
+            List of player prop dictionaries
+        """
+        logger.info(f"Fetching historical props: {sport} {start_year}-{end_year}")
+        props = self.database.load_props(sport, start_year, end_year, prop_type)
+        if not props:
+            logger.warning(f"No historical props found for {sport}")
+        return props
 
     def validate_game_data(self, game: Dict[str, Any]) -> tuple[bool, str]:
         """
@@ -355,7 +599,19 @@ class DataPipeline:
         Returns:
             Tuple of (is_valid, error_message)
         """
-        return self.validator.validate(game)
+        return self.validator.validate_game(game)
+
+    def validate_prop_data(self, prop: Dict[str, Any]) -> tuple[bool, str]:
+        """
+        Validate player prop data against schema.
+
+        Args:
+            prop: Player prop data dictionary
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        return self.validator.validate_prop(prop)
 
     def save_games(
         self, games: List[Dict[str, Any]], sport: str, year: int
@@ -374,6 +630,23 @@ class DataPipeline:
         logger.info(f"Saving {len(games)} games for {sport} {year}")
         return self.database.save_games(games, sport, year)
 
+    def save_props(
+        self, props: List[Dict[str, Any]], sport: str, year: int
+    ) -> int:
+        """
+        Save player props to historical database.
+
+        Args:
+            props: List of player prop dictionaries
+            sport: Sport name
+            year: Year
+
+        Returns:
+            Number of props saved
+        """
+        logger.info(f"Saving {len(props)} props for {sport} {year}")
+        return self.database.save_props(props, sport, year)
+
     def get_game_count(self, sport: str, start_year: int = 2020, end_year: int = 2024) -> int:
         """
         Get total count of games for sport/year range.
@@ -390,7 +663,28 @@ class DataPipeline:
         for year in range(start_year, end_year + 1):
             count = self.database.game_count(sport, year)
             total += count
+        return total
 
+    def get_prop_count(
+        self, sport: str, start_year: int = 2020, end_year: int = 2024,
+        prop_type: Optional[str] = None
+    ) -> int:
+        """
+        Get total count of player props for sport/year range.
+
+        Args:
+            sport: Sport name
+            start_year: Start year
+            end_year: End year
+            prop_type: Filter by prop type (optional)
+
+        Returns:
+            Total number of props
+        """
+        total = 0
+        for year in range(start_year, end_year + 1):
+            count = self.database.prop_count(sport, year, prop_type)
+            total += count
         return total
 
     def cache_data(self, key: str, data: Any) -> None:
