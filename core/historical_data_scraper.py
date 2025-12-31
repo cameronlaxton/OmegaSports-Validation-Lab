@@ -100,13 +100,13 @@ class HistoricalDataScraper:
         },
     }
     
-    def __init__(self, cache_dir: Optional[Path] = None, enable_multi_source: bool = False):
+    def __init__(self, cache_dir: Optional[Path] = None, enable_multi_source: bool = True):
         """
         Initialize historical data scraper.
         
         Args:
             cache_dir: Directory for caching API responses
-            enable_multi_source: Enable multi-source data aggregation for enhanced statistics
+            enable_multi_source: Enable multi-source data aggregation for enhanced statistics (default: True)
         """
         self.cache_dir = Path(cache_dir) if cache_dir else Path("./data/cache")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -115,7 +115,7 @@ class HistoricalDataScraper:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         })
         
-        # Initialize multi-source aggregator if enabled
+        # Initialize multi-source aggregator (enabled by default)
         self.enable_multi_source = enable_multi_source
         self.aggregator = MultiSourceAggregator(cache_dir=cache_dir) if enable_multi_source else None
         

@@ -109,10 +109,10 @@ def verify_data_completeness(game: Dict[str, Any]) -> Dict[str, bool]:
 
 ## Usage Examples
 
-### Basic Usage (ESPN Only)
+### Basic Usage (Multi-Source Enabled by Default)
 
 ```bash
-# Fetch real historical data from ESPN
+# Fetch comprehensive data from multiple sources (default behavior)
 python scripts/load_and_validate_games.py \
     --start-year 2020 \
     --end-year 2024 \
@@ -125,24 +125,24 @@ python scripts/load_and_validate_games.py \
 - Team statistics when available
 - Betting lines from ESPN (when available)
 - Validated to ensure not sample data
+- **Enhanced statistics from multiple sources**
+- **Advanced metrics and analytics**
 
-### Enhanced Usage (Multi-Source)
+### ESPN-Only Mode (Not Recommended)
 
 ```bash
-# Fetch enhanced data from multiple sources
+# Use only ESPN source (disables multi-source aggregation)
 python scripts/load_and_validate_games.py \
     --start-year 2020 \
     --end-year 2024 \
     --sports NBA NFL \
-    --enable-multi-source
+    --disable-multi-source
 ```
 
-**Additional data includes:**
-- Advanced statistics from Sports Reference
-- Historical odds from The Odds API
-- Player-level statistics
-- Line movement data
-- Enhanced validation across sources
+**Limited to:**
+- ESPN data only
+- No enhanced statistics
+- No advanced analytics
 
 ## Data Quality Tracking
 

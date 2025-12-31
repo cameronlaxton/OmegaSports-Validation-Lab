@@ -85,9 +85,9 @@ def parse_args():
         help='Enable verbose logging'
     )
     parser.add_argument(
-        '--enable-multi-source',
+        '--disable-multi-source',
         action='store_true',
-        help='Enable multi-source data aggregation for enhanced statistics (requires additional API keys)'
+        help='Disable multi-source data aggregation (uses only ESPN - not recommended)'
     )
     return parser.parse_args()
 
@@ -185,7 +185,7 @@ def main():
     print(f"End Year: {args.end_year}")
     print(f"Sports: {', '.join(args.sports)}")
     print(f"Minimum Count: {args.min_count}")
-    print(f"Multi-Source Enabled: {args.enable_multi_source}")
+    print(f"Multi-Source Enabled: {not args.disable_multi_source}")
     print()
     
     # Initialize components
@@ -196,13 +196,14 @@ def main():
     )
     scraper = HistoricalDataScraper(
         cache_dir=Path("data/cache"),
-        enable_multi_source=args.enable_multi_source
+        enable_multi_source=(not args.disable_multi_source)
     )
     print("✓ Components initialized")
-    if args.enable_multi_source:
+    if not args.disable_multi_source:
         print("  ℹ Multi-source data aggregation enabled (enhanced statistics)")
+        print("  ℹ Use --disable-multi-source to use only ESPN (not recommended)")
     else:
-        print("  ℹ Using primary ESPN source (use --enable-multi-source for enhanced stats)")
+        print("  ⚠ Multi-source disabled - using ESPN only")
     
     # Load data for each sport
     results = {}

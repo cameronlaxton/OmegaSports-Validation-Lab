@@ -16,23 +16,25 @@ Loads and validates historical game data (2020-2024) for sports betting analysis
 - Data validation and caching
 - Progress reporting
 
-**Usage:**
-
+**Usage Examples:**
 ```bash
-# Load all sports with default settings (2020-2024, min 1000 games)
+# Load all sports with default settings (2020-2024, min 1000 games, multi-source enabled)
 python scripts/load_and_validate_games.py
 
-# Load specific sports
+# Load specific sports (multi-source enabled by default)
 python scripts/load_and_validate_games.py --sports NBA NFL
 
-# Custom year range
+# Custom year range (multi-source enabled by default)
 python scripts/load_and_validate_games.py --start-year 2022 --end-year 2024
 
-# Custom minimum count
+# Custom minimum count (multi-source enabled by default)
 python scripts/load_and_validate_games.py --min-count 500
 
 # Verbose output
 python scripts/load_and_validate_games.py --verbose
+
+# Disable multi-source (not recommended - ESPN only)
+python scripts/load_and_validate_games.py --disable-multi-source
 
 # All options combined
 python scripts/load_and_validate_games.py \
