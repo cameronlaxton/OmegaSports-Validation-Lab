@@ -1,0 +1,71 @@
+name: Generate Reports
+
+on:
+  workflow_run:
+    workflows: ["Daily Experiments"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  generate-reports:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install jupyter nbconvert
+
+    - name: Generate analysis notebook
+      run: |
+        python -c "
+        import json
+        from pathlib import Path
+        from datetime import datetime
+        
+        # Create summary of latest results
+        exp_dir = Path('data/experiments')
+        if exp_dir.exists():
+            latest_results = sorted(exp_dir.glob('*.json'), key=lambda p: p.stat().st_mtime)[-1:]
+            print(f'Found {len(latest_results)} recent result files')
+            for f in latest_results:
+                print(f'  - {f.name}')
+        "
+      continue-on-error: true
+
+    - name: Create summary report
+      run: |
+        mkdir -p reports
+        echo "# Daily Experiment Report" > reports/daily_summary.md
+        echo "" >> reports/daily_summary.md
+        echo "Generated: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> reports/daily_summary.md
+        echo "" >> reports/daily_summary.md
+        echo "## Latest Results" >> reports/daily_summary.md
+        echo "" >> reports/daily_summary.md
+        ls -lh data/experiments/*.json 2>/dev/null | tail -5 | awk '{print "- " $9 " (" $5 ")"}' >> reports/daily_summary.md || echo "No results found" >> reports/daily_summary.md
+
+    - name: Upload reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: daily-reports
+        path: reports/
+        retention-days: 90
+      continue-on-error: true
+
+    - name: Commit reports
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A reports/ || true
+        git commit -m "Generate daily reports: $(date -u +'%Y-%m-%d')" || true
+        git push
+      continue-on-error: true

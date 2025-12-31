@@ -1,0 +1,60 @@
+name: Daily Experiments
+
+on:
+  schedule:
+    # Run daily at 3 AM UTC (can be adjusted)
+    - cron: '0 3 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  run-experiments:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run all modules
+      run: |
+        python run_all_modules.py
+      continue-on-error: true
+      timeout-minutes: 120
+
+    - name: Archive results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: experiment-results
+        path: |
+          data/experiments/
+          data/logs/
+        retention-days: 30
+
+    - name: Commit results
+      if: always()
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A data/experiments/ || true
+        git add -A data/logs/ || true
+        git commit -m "Daily experiment run: $(date -u +'%Y-%m-%d %H:%M:%S')
+        
+        Module results saved to data/experiments/" || true
+        git push
+      continue-on-error: true
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "Experiment run failed on $(date -u +'%Y-%m-%d %H:%M:%S')"
+        echo "Check logs in data/logs/ for details"
