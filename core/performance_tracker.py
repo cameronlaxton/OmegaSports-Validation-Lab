@@ -80,7 +80,13 @@ class PerformanceTracker:
         # Calculate profit factor
         total_wins = sum(r.get('profit', 0.0) for r in results if r.get('profit', 0.0) > 0)
         total_losses = abs(sum(r.get('profit', 0.0) for r in results if r.get('profit', 0.0) < 0))
-        profit_factor = total_wins / total_losses if total_losses > 0 else float('inf') if total_wins > 0 else 0.0
+        
+        if total_losses > 0:
+            profit_factor = total_wins / total_losses
+        elif total_wins > 0:
+            profit_factor = float('inf')
+        else:
+            profit_factor = 0.0
         
         return PerformanceMetrics(
             hit_rate=hit_rate,
