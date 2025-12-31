@@ -145,15 +145,17 @@ def load_sport_data(
         # Save games by year
         total_saved = 0
         for year in range(start_year, end_year + 1):
-            # Filter games by year using proper date parsing
+            # Filter games by year using robust date parsing
             year_games = []
             for g in games:
                 try:
-                    game_year = datetime.fromisoformat(g['date']).year
+                    # Parse YYYY-MM-DD format date strings
+                    from datetime import datetime
+                    game_year = datetime.strptime(g['date'], '%Y-%m-%d').year
                     if game_year == year:
                         year_games.append(g)
-                except (ValueError, KeyError):
-                    logger.warning(f"Invalid date format in game: {g.get('game_id', 'unknown')}")
+                except (ValueError, KeyError) as e:
+                    logger.warning(f"Invalid date format in game {g.get('game_id', 'unknown')}: {e}")
                     continue
             
             if year_games:

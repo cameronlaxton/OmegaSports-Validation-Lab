@@ -203,7 +203,8 @@ class HistoricalDataScraper:
         while current_date <= season_end:
             chunk_end = min(current_date + timedelta(days=chunk_days), season_end)
             
-            # Parse ESPN API response
+            # Try to fetch from cache first
+            cache_key = f"{sport}_{current_date.strftime('%Y%m%d')}_{chunk_end.strftime('%Y%m%d')}"
             cached_data = self._get_from_cache(cache_key)
             if cached_data:
                 games.extend(cached_data)
