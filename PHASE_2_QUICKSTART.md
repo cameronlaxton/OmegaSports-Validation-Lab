@@ -56,7 +56,6 @@ cp .env.example .env
 ```env
 # OmegaSports Configuration
 OMEGA_ENGINE_PATH=../OmegaSportsAgent  # Adjust path to your OmegaSports repo
-OMEGA_SCRAPER_API_KEY=your_api_key    # If needed
 
 # Data Configuration
 HISTORICAL_DATA_PATH=./data/historical

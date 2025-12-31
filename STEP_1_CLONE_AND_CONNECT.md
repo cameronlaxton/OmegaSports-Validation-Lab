@@ -127,7 +127,6 @@ Open `.env` in your text editor (VS Code, nano, etc.) and configure:
 ```env
 # OmegaSports Configuration
 OMEGA_ENGINE_PATH=../OmegaSportsAgent
-OMEGA_SCRAPER_API_KEY=your_api_key_here
 
 # Data Configuration
 HISTORICAL_DATA_PATH=./data/historical
@@ -149,7 +148,6 @@ ENABLE_GAME_BETS=true
 | Setting | Value | Notes |
 |---------|-------|-------|
 | `OMEGA_ENGINE_PATH` | `../OmegaSportsAgent` | Path to your OmegaSports repo (adjust if different) |
-| `OMEGA_SCRAPER_API_KEY` | Your API key | If you have one; otherwise leave blank |
 | `HISTORICAL_DATA_PATH` | `./data/historical` | Where historical games/props are stored |
 | `CACHE_PATH` | `./data/cache` | Where cached data is stored |
 | `DEFAULT_ITERATIONS` | `10000` | Simulation iterations (higher = more accurate, slower) |
