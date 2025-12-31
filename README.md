@@ -19,8 +19,8 @@ The lab is organized into 8 experimental modules, each addressing a critical asp
 
 | Module | Focus | Status |
 |--------|-------|--------|
-| **Module 1** | Edge Threshold Calibration | 🔄 In Development |
-| **Module 2** | Simulation Iteration Optimization | 🔄 In Development |
+| **Module 1** | Edge Threshold Calibration | ✅ Complete |
+| **Module 2** | Simulation Iteration Optimization | 🔄 Stub Ready |
 | **Module 3** | Variance Scalar Tuning | 🔄 Planned |
 | **Module 4** | Kelly Criterion Validation | 🔄 Planned |
 | **Module 5** | Model Combination Testing | 🔄 Planned |
@@ -120,24 +120,32 @@ python -m pytest tests/
 ### Running Experiments
 
 ```bash
-# Run single module
-python modules/01_edge_threshold/run_experiment.py
-
 # Run all modules
 python run_all_modules.py
 
-# Generate reports
-python generate_reports.py
+# Run specific module
+python run_all_modules.py --module 01
+
+# Continue on errors
+python run_all_modules.py --skip-errors
+
+# Load historical data
+python scripts/load_and_validate_games.py --sports NBA NFL
+
+# Check existing data
+python scripts/load_and_validate_games.py --check-only
 ```
 
 ## 📚 Documentation
 
+- **[PHASE_2_STATUS.md](./PHASE_2_STATUS.md)** - **NEW** - Current Phase 2 status and next steps
 - **[PHASE_1_COMPLETE.md](./PHASE_1_COMPLETE.md)** - Phase 1 completion summary and achievements
 - **[PHASE_2_KICKOFF.md](./PHASE_2_KICKOFF.md)** - Phase 2 launch guide and daily checklist
+- **[PHASE_2_PLANNING.md](./PHASE_2_PLANNING.md)** - Detailed 4-week Phase 2 timeline
+- **[PHASE_2_QUICKSTART.md](./PHASE_2_QUICKSTART.md)** - Daily reference and troubleshooting
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Technical design and system architecture
 - **[INSTALLATION.md](./INSTALLATION.md)** - Detailed setup instructions
 - **[EXPERIMENTS.md](./EXPERIMENTS.md)** - Experiment protocols and methodologies
-- **[PHASE_2_PLANNING.md](./PHASE_2_PLANNING.md)** - Detailed 4-week Phase 2 timeline
 - **[PHASE_2_QUICKSTART.md](./PHASE_2_QUICKSTART.md)** - Quick reference for daily Phase 2 tasks
 
 ## 🧪 Experimental Modules Overview
