@@ -44,6 +44,7 @@ htmlcov/
 
 # Data
 data/historical/*.json
+!data/historical/sample*.json
 data/experiments/*.json
 data/logs/*.log
 data/cache/
