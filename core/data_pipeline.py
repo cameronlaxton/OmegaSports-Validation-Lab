@@ -719,50 +719,85 @@ class DataPipeline:
         self.cache.clear(prefix)
     
     def fetch_and_cache_games(
-        self, sport: str, start_year: int, end_year: int
+        self, sport: str, start_year: int, end_year: int, force_refresh: bool = False,
+        enrich_with_odds: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        Fetch games from OmegaSports scraper and cache them.
+        Fetch games from multiple sources and cache them.
+        
+        Uses real historical data scrapers (Basketball Reference, Pro Football Reference, etc.)
+        for historical data. NO MOCK OR SAMPLE DATA.
+        
+        CRITICAL: Enriches games with betting lines from The Odds API for proper validation.
         
         Args:
             sport: Sport name (NBA, NFL, etc.)
             start_year: Start year (inclusive)
             end_year: End year (inclusive)
+            force_refresh: Whether to bypass cache and fetch fresh data
+            enrich_with_odds: Whether to add betting lines from The Odds API (CRITICAL for validation)
         
         Returns:
-            List of all game dictionaries
+            List of all game dictionaries with real historical data and betting lines
         """
-        from omega.scraper_engine import ScraperEngine
+        from omega.historical_scrapers import MultiSourceHistoricalScraper
+        from omega.api_enrichment import APIDataEnrichment
+        from datetime import datetime
         
-        scraper = ScraperEngine()
+        scraper = MultiSourceHistoricalScraper()
+        enrichment = APIDataEnrichment() if enrich_with_odds else None
+        
         all_games = []
+        current_year = datetime.now().year
+        
+        logger.info(f"Fetching {sport} games from {start_year} to {end_year}")
+        logger.info("Using REAL historical data from Sports Reference sites (NO MOCK DATA)")
+        
+        if enrich_with_odds:
+            logger.info("BETTING LINES: Will enrich with odds from The Odds API")
         
         for year in range(start_year, end_year + 1):
-            # Check cache first
-            cache_key = f"omega_games_{sport}_{year}"
-            cached = self.get_cached_data(cache_key)
+            # Check cache first (unless force_refresh is True)
+            cache_key = f"historical_games_enriched_{sport}_{year}" if enrich_with_odds else f"historical_games_{sport}_{year}"
+            cached = self.get_cached_data(cache_key) if not force_refresh else None
             
             if cached:
-                logger.info(f"Using cached data for {sport} {year}")
+                logger.info(f"Using cached data for {sport} {year} ({len(cached)} games)")
                 all_games.extend(cached)
             else:
-                logger.info(f"Fetching fresh data for {sport} {year}")
-                # Fetch games for the year
-                # Note: Scraper currently fetches upcoming games
-                # For historical data, you may need a different data source
-                start_date = f"{year}-01-01"
-                games = scraper.fetch_games(sport, start_date=start_date, limit=1000)
+                if force_refresh:
+                    logger.info(f"Force refresh: Fetching fresh historical data for {sport} {year}")
+                else:
+                    logger.info(f"Fetching historical data for {sport} {year}")
                 
-                # Filter by year
-                year_games = [
-                    g for g in games 
-                    if g.get('date', '').startswith(str(year))
-                ]
+                # Use historical scrapers for past/current seasons
+                # This scrapes REAL data from Basketball Reference, Pro Football Reference, etc.
+                try:
+                    year_games = scraper.fetch_games(sport, year, year)
+                    
+                    if year_games:
+                        # Enrich with betting lines (CRITICAL for validation)
+                        if enrich_with_odds and enrichment:
+                            logger.info(f"Enriching {len(year_games)} games with betting lines...")
+                            year_games = enrichment.enrich_games(
+                                year_games,
+                                add_betting_lines=True,
+                                add_player_stats=False,
+                                show_progress=True
+                            )
+                        
+                        # Cache and save
+                        self.cache_data(cache_key, year_games)
+                        self.save_games(year_games, sport, year)
+                        all_games.extend(year_games)
+                        logger.info(f"✓ Scraped {len(year_games)} real games for {sport} {year}")
+                    else:
+                        logger.warning(f"No games found for {sport} {year}")
                 
-                if year_games:
-                    # Cache and save
-                    self.cache_data(cache_key, year_games)
-                    self.save_games(year_games, sport, year)
-                    all_games.extend(year_games)
+                except Exception as e:
+                    logger.error(f"Error fetching historical data for {sport} {year}: {e}")
+                    import traceback
+                    logger.debug(traceback.format_exc())
         
+        logger.info(f"Total games fetched for {sport}: {len(all_games)}")
         return all_games

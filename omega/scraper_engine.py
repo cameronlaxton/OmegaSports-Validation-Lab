@@ -77,6 +77,53 @@ class ScraperEngine:
             self._scraper = None
         else:
             self._scraper = OmegaScraper()
+        
+        # Initialize logger
+        import logging
+        self.logger = logging.getLogger(__name__)
+        
+        # Cache for loaded modules
+        self._schedule_api = None
+        self._stats_module = None
+    
+    def _load_schedule_api(self):
+        """Load schedule_api module from OmegaSportsAgent."""
+        if self._schedule_api is not None:
+            return self._schedule_api
+        
+        try:
+            # First attempt: Import from OmegaSportsAgent via configured path
+            from utils.config import config
+            omega_path = config.omega_engine_path
+            
+            if omega_path and omega_path.exists():
+                import sys
+                omega_str = str(omega_path)
+                if omega_str not in sys.path:
+                    sys.path.insert(0, omega_str)
+                
+                # Try importing from omega.data.schedule_api
+                try:
+                    from omega.data import schedule_api
+                    self._schedule_api = schedule_api
+                    self.logger.info(f"Successfully loaded schedule_api from {omega_path}")
+                    return self._schedule_api
+                except ImportError as e:
+                    self.logger.warning(f"Could not import from omega.data: {e}")
+            
+            # Fallback: Try direct import if omega package is available
+            try:
+                from omega.data import schedule_api
+                self._schedule_api = schedule_api
+                self.logger.info("Successfully loaded schedule_api from system path")
+                return self._schedule_api
+            except ImportError:
+                pass
+                
+        except Exception as e:
+            self.logger.error(f"Error loading schedule_api: {e}")
+        
+        return None
     
     def fetch_games(
         self, 
@@ -91,7 +138,7 @@ class ScraperEngine:
         
         Args:
             sport: Sport code (NBA, NFL, NHL, MLB, NCAAB, etc.)
-            start_date: Start date in YYYY-MM-DD format (optional)
+            start_date: Start date in YYYY-MM-DD format (optional, for historical data use get_scoreboard)
             limit: Maximum number of games to return (optional)
         
         Returns:
@@ -106,114 +153,141 @@ class ScraperEngine:
             raise ValueError(
                 f"Sport '{sport}' not supported. Supported sports: {', '.join(SUPPORTED_SPORTS.keys())}"
             )
+        
+        # Load schedule API
+        schedule_api = self._load_schedule_api()
+        if schedule_api is None:
+            self.logger.error(
+                "Could not load schedule_api from OmegaSportsAgent. "
+                "Ensure OMEGA_ENGINE_PATH is correctly configured in .env and points to OmegaSportsAgent repository."
+            )
+            return []
+        
         try:
-            # Try to use omega.data.schedule_api to get games
-            # Need to import from the actual OmegaSportsAgent omega package
-            # First, try to import directly from the engine path
-            import importlib.util
-            from pathlib import Path
             from datetime import datetime, timedelta
-            import logging
-            
-            logger = logging.getLogger(__name__)
             games = []
             
-            # Try to load schedule_api from OmegaSportsAgent
-            schedule_api = None
-            try:
-                from utils.config import config
-                omega_path = config.omega_engine_path
-                if omega_path and omega_path.exists():
-                    # Import from the actual omega package in OmegaSportsAgent
-                    spec = importlib.util.spec_from_file_location(
-                        "omega.data.schedule_api",
-                        omega_path / "omega" / "data" / "schedule_api.py"
-                    )
-                    if spec and spec.loader:
-                        schedule_api_module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(schedule_api_module)
-                        schedule_api = schedule_api_module
-            except Exception as e:
-                logger.debug(f"Could not load schedule_api from engine path: {e}")
-                # Fallback: try normal import (might work if omega is in path)
-                try:
-                    # Temporarily remove our local omega from path to import from engine
-                    import sys
-                    original_path = sys.path.copy()
-                    try:
-                        # Remove current directory from path temporarily
-                        if '.' in sys.path:
-                            sys.path.remove('.')
-                        if str(Path.cwd()) in sys.path:
-                            sys.path.remove(str(Path.cwd()))
-                        from omega.data import schedule_api as schedule_api_module
-                        schedule_api = schedule_api_module
-                    finally:
-                        sys.path = original_path
-                except ImportError:
-                    pass
-            
+            # Determine if we're fetching historical or upcoming games
             if start_date:
-                # Parse start date and calculate days to look ahead
                 try:
-                    start = datetime.strptime(start_date, "%Y-%m-%d")
+                    start_dt = datetime.strptime(start_date, "%Y-%m-%d")
                     today = datetime.now()
-                    days_ahead = (start - today).days
                     
-                    if days_ahead < 0:
-                        # Start date is in the past, look back or return empty
-                        return []
-                    
-                    # Get games for the specified date range
-                    # Look ahead up to 7 days from start_date
-                    days = min(7, days_ahead + 7)
-                    raw_games = schedule_api.get_upcoming_games(sport_upper, days=days)
-                    
-                    # Filter by start_date
-                    for game in raw_games:
-                        game_date_str = game.get("date", "")
-                        if game_date_str:
+                    # If date is in the past, try to get scoreboard for that date
+                    if start_dt.date() < today.date():
+                        self.logger.info(f"Fetching historical games for {sport_upper} on {start_date}")
+                        # Use scoreboard API for historical data
+                        raw_games = schedule_api.get_scoreboard(sport_upper, date=start_date)
+                        games = [self._format_game(g, sport_upper) for g in raw_games]
+                    else:
+                        # Future date - get upcoming games
+                        days_ahead = (start_dt - today).days
+                        days_to_fetch = max(1, min(days_ahead + 7, 30))  # Cap at 30 days
+                        self.logger.info(f"Fetching upcoming games for {sport_upper} (next {days_to_fetch} days)")
+                        raw_games = schedule_api.get_upcoming_games(sport_upper, days=days_to_fetch)
+                        
+                        # Filter to games on or after start_date
+                        for game in raw_games:
                             try:
-                                # Parse ESPN date format (ISO 8601)
-                                game_date = datetime.fromisoformat(game_date_str.replace("Z", "+00:00"))
-                                if game_date.date() >= start.date():
-                                    games.append(self._format_game(game, sport_upper))
+                                game_date_str = game.get("date", "")
+                                if game_date_str:
+                                    game_dt = datetime.fromisoformat(game_date_str.replace("Z", "+00:00"))
+                                    if game_dt.date() >= start_dt.date():
+                                        games.append(self._format_game(game, sport_upper))
                             except (ValueError, AttributeError):
-                                # If date parsing fails, include the game anyway
                                 games.append(self._format_game(game, sport_upper))
-                        else:
-                            # No date in game, include it anyway
-                            games.append(self._format_game(game, sport_upper))
-                except ValueError:
-                    # Invalid date format, just get upcoming games
+                
+                except ValueError as e:
+                    self.logger.warning(f"Invalid date format '{start_date}': {e}. Fetching upcoming games instead.")
                     raw_games = schedule_api.get_upcoming_games(sport_upper, days=7)
                     games = [self._format_game(g, sport_upper) for g in raw_games]
             else:
-                # No start_date specified, get upcoming games
-                raw_games = schedule_api.get_upcoming_games(sport_upper, days=7)
-                logger.debug(f"Fetched {len(raw_games)} raw games from schedule_api")
-                games = [self._format_game(g, sport_upper) for g in raw_games]
+                # No date specified - get today's or upcoming games
+                self.logger.info(f"Fetching today's games for {sport_upper}")
+                try:
+                    raw_games = schedule_api.get_todays_games(sport_upper)
+                    games = [self._format_game(g, sport_upper) for g in raw_games]
+                    
+                    # If no games today, get upcoming
+                    if not games:
+                        self.logger.info(f"No games today, fetching upcoming games for {sport_upper}")
+                        raw_games = schedule_api.get_upcoming_games(sport_upper, days=7)
+                        games = [self._format_game(g, sport_upper) for g in raw_games]
+                except Exception as e:
+                    self.logger.warning(f"Error fetching today's games: {e}. Trying upcoming games.")
+                    raw_games = schedule_api.get_upcoming_games(sport_upper, days=7)
+                    games = [self._format_game(g, sport_upper) for g in raw_games]
             
             # Apply limit if specified
             if limit and limit > 0:
                 games = games[:limit]
             
-            logger.debug(f"Returning {len(games)} formatted games")
+            self.logger.info(f"Returning {len(games)} games for {sport_upper}")
             return games
             
-        except ImportError as e:
-            # omega.data.schedule_api not available
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.warning(f"Could not import omega.data.schedule_api: {e}")
-            return []
         except Exception as e:
-            # Log error but don't fail - return empty list
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.warning(f"Error fetching games: {e}")
+            self.logger.error(f"Error fetching games for {sport_upper}: {e}")
             import traceback
-            logger.debug(traceback.format_exc())
+            self.logger.debug(traceback.format_exc())
+            return []
+    
+    def fetch_historical_games(
+        self,
+        sport: str,
+        start_date: str,
+        end_date: Optional[str] = None,
+        limit: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetch historical games for a date range.
+        
+        Args:
+            sport: Sport code (NBA, NFL, etc.)
+            start_date: Start date in YYYY-MM-DD format
+            end_date: End date in YYYY-MM-DD format (optional, defaults to start_date)
+            limit: Maximum number of games to return (optional)
+        
+        Returns:
+            List of historical game dictionaries
+        """
+        schedule_api = self._load_schedule_api()
+        if schedule_api is None:
+            self.logger.error("Could not load schedule_api for historical data fetch")
+            return []
+        
+        try:
+            from datetime import datetime, timedelta
+            
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d") if end_date else start_dt
+            
+            all_games = []
+            current_dt = start_dt
+            
+            # Fetch games for each date in the range
+            while current_dt <= end_dt:
+                date_str = current_dt.strftime("%Y-%m-%d")
+                try:
+                    self.logger.debug(f"Fetching scoreboard for {sport} on {date_str}")
+                    raw_games = schedule_api.get_scoreboard(sport.upper(), date=date_str)
+                    formatted_games = [self._format_game(g, sport.upper()) for g in raw_games]
+                    all_games.extend(formatted_games)
+                except Exception as e:
+                    self.logger.warning(f"Error fetching games for {date_str}: {e}")
+                
+                current_dt += timedelta(days=1)
+            
+            # Apply limit if specified
+            if limit and limit > 0:
+                all_games = all_games[:limit]
+            
+            self.logger.info(f"Fetched {len(all_games)} historical games for {sport}")
+            return all_games
+            
+        except Exception as e:
+            self.logger.error(f"Error fetching historical games: {e}")
+            import traceback
+            self.logger.debug(traceback.format_exc())
             return []
     
     def _format_game(self, game: Dict[str, Any], sport: str) -> Dict[str, Any]:

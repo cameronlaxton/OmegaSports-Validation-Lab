@@ -12,6 +12,8 @@ plotly==5.18.0
 # HTTP & APIs
 requests==2.31.0
 python-dotenv==1.0.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
 
 # Data Processing
 pyarrow==14.0.1

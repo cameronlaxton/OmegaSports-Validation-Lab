@@ -87,7 +87,7 @@ Loading comprehensive historical game data (2020-2024) with full statistics.
 python scripts/load_and_validate_games.py \
     --start-year 2020 \
     --end-year 2024 \
-    --sports NBA NFL NCAAB NCAAF \
+    --sports NBA NFL \
     --min-count 1000
 
 # Or load specific sports
@@ -418,12 +418,18 @@ echo "OMEGA_ENGINE_PATH=../OmegaSportsAgent" >> .env
 
 **Solution:** Run data pipeline first:
 ```bash
+python scripts/load_and_validate_games.py --sports NBA NFL NCAAB NCAAF
+
+# Or manually:
 python -c "
 from core.data_pipeline import DataPipeline
 pipeline = DataPipeline()
 for sport in ['NBA', 'NFL', 'NCAAB', 'NCAAF']:
     games = pipeline.fetch_and_cache_games(sport, 2020, 2024)
-    pipeline.save_games(games, sport, 2024)
+    for year in range(2020, 2025):
+        year_games = [g for g in games if g.get('date', '').startswith(str(year))]
+        if year_games:
+            pipeline.save_games(year_games, sport, year)
 "
 ```
 
