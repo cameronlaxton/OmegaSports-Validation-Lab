@@ -57,8 +57,7 @@ def discover_modules(modules_dir: Path) -> List[Dict[str, Any]]:
             "number": module_num,
             "name": module_name,
             "path": module_path,
-            "script": run_script,
-            "import_path": f"modules.{module_path.name}.run_experiment"
+            "script": run_script
         })
         
         logger.info(f"Discovered Module {module_num}: {module_name}")
@@ -78,15 +77,23 @@ def run_module(module_info: Dict[str, Any]) -> bool:
     """
     module_num = module_info["number"]
     module_name = module_info["name"]
-    import_path = module_info["import_path"]
+    script_path = module_info["script"]
     
     logger.info("\n" + "="*80)
     logger.info(f"Executing Module {module_num}: {module_name}")
     logger.info("="*80)
     
     try:
-        # Import the module
-        module = importlib.import_module(import_path)
+        # Load module directly from file path (avoids numeric module name issues)
+        import importlib.util
+        
+        spec = importlib.util.spec_from_file_location("module_runner", script_path)
+        if spec is None or spec.loader is None:
+            logger.error(f"✗ Module {module_num} could not be loaded")
+            return False
+        
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
         
         # Run the main function
         if hasattr(module, "main"):
