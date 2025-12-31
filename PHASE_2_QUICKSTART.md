@@ -77,41 +77,26 @@ python -c "from utils.config import config; print(f'Cache path: {config.cache_pa
 ## 📈 Week 1-2: Data Pipeline
 
 ### What You're Doing
-Connecting to your OmegaSports engine and loading historical game data.
+Loading comprehensive historical game data (2020-2024) with full statistics.
 
 ### Daily Tasks
 
-**Day 1-2: OmegaSports Integration**
+**Day 1-2: Load Historical Data**
 ```bash
-# Test connection
-python -c "
-from omega.simulation.simulation_engine import run_game_simulation
-from omega.scraper_engine import ScraperEngine
+# Load all sports with comprehensive statistics
+python scripts/load_and_validate_games.py \
+    --start-year 2020 \
+    --end-year 2024 \
+    --sports NBA NFL NCAAB NCAAF \
+    --min-count 1000
 
-scraper = ScraperEngine()
-games = scraper.fetch_games('NBA', start_date='2025-01-01', limit=5)
-print(f'✓ Fetched {len(games)} games')
-"
+# Or load specific sports
+python scripts/load_and_validate_games.py --sports NBA NFL
 ```
 
-**Day 3-4: Load Historical Data**
+**Day 3-4: Verify Data Quality**
 ```bash
-# Create and run data processing script
-python -c "
-from core.data_pipeline import DataPipeline
-
-pipeline = DataPipeline()
-
-# Fetch and cache games for all sports
-for sport in ['NBA', 'NFL', 'NCAAB', 'NCAAF']:
-    games = pipeline.fetch_and_cache_games(sport, 2020, 2024)
-    print(f'{sport}: {len(games)} games loaded')
-"
-```
-
-**Day 5-7: Validate Data**
-```bash
-# Check data quality
+# Check loaded data
 python -c "
 from core.data_pipeline import DataPipeline
 
@@ -126,22 +111,81 @@ print('✓ All sports ready for Module 1')
 "
 ```
 
+**Day 5-7: Explore Data Structure**
+```bash
+# View sample data format
+cat data/historical/sample_nba_2024_games.json | python -m json.tool
+
+# Check data completeness
+python -c "
+from core.data_pipeline import DataPipeline
+import json
+
+pipeline = DataPipeline()
+games = pipeline.fetch_historical_games('NBA', 2024, 2024)
+
+print(f'Total games: {len(games)}')
+print(f'Sample game fields: {list(games[0].keys())}')
+print(f'Has team stats: {\"home_team_stats\" in games[0]}')
+print(f'Has betting lines: {\"moneyline\" in games[0]}')
+"
+```
+
 ### Expected Outputs
 
 ```
-NBA: 5190 games loaded
-NFL: 1280 games loaded
-NCAAB: 3450 games loaded
-NCAAF: 1320 games loaded
+================================================================================
+                  Loading and Validating Historical Games
+================================================================================
+
+Start Year: 2020
+End Year: 2024
+Sports: NBA, NFL, NCAAB, NCAAF
+Minimum Count: 1000
+
+Processing NBA...
+NBA: 5190 games loaded (took 45.23s)
+✓ NBA has sufficient data: 5190 >= 1000
+
+Processing NFL...
+NFL: 1280 games loaded (took 23.12s)
+✓ NFL has sufficient data: 1280 >= 1000
+
+Processing NCAAB...
+NCAAB: 3450 games loaded (took 67.89s)
+✓ NCAAB has sufficient data: 3450 >= 1000
+
+Processing NCAAF...
+NCAAF: 1320 games loaded (took 32.45s)
+✓ NCAAF has sufficient data: 1320 >= 1000
+
+================================================================================
+                                   Summary
+================================================================================
+
+✓ NBA: 5190 games
+✓ NFL: 1280 games
+✓ NCAAB: 3450 games
+✓ NCAAF: 1320 games
 
 ✓ All sports ready for Module 1
 ```
 
+### Data Features
+
+The loaded data includes:
+- ✅ Complete game results (2020-2024)
+- ✅ Team statistics (FG%, rebounds, assists, etc.)
+- ✅ Betting lines (moneyline, spread, totals)
+- ✅ Venue and attendance information
+- ✅ Historical odds and line movements
+
 ### Success Criteria
 - ✅ 1000+ games per sport
-- ✅ Data passes validation
-- ✅ Cache working
-- ✅ Ready to proceed
+- ✅ Data includes comprehensive statistics (not just schedules)
+- ✅ Betting lines available for most games
+- ✅ Cache working for efficient re-fetching
+- ✅ Ready to proceed to Module 1
 
 ---
 

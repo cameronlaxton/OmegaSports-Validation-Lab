@@ -211,12 +211,43 @@ The lab evaluates success across multiple dimensions:
 
 ## 🔗 Integration with OmegaSports Engine
 
-This lab is designed as a companion to the [OmegaSports Engine](https://github.com/cameronlaxton/OmegaSportsAgent):
+This lab is designed as a companion to the [OmegaSports Engine](https://github.com/cameronlaxton/OmegaSports Engine):
 
 - **Data Source:** Leverages OmegaSports scraper engine for live data collection
 - **Simulation Base:** Builds on OmegaSports Monte Carlo simulation infrastructure
 - **Output Format:** Uses OmegaSports schema and JSON output formats
 - **Deployment Target:** Optimizations feed back into OmegaSports production system
+
+## 📊 Historical Data Loading
+
+The lab includes a comprehensive historical data loading system that goes beyond ESPN's scheduler API:
+
+### Features
+
+- **Historical Game Data (2020-2024):** Complete game results with scores
+- **Comprehensive Statistics:** Team stats, player performance, advanced metrics
+- **Betting Lines:** Moneyline, spreads, totals with historical odds
+- **Multiple Sports:** NBA, NFL, NCAAB, NCAAF support
+- **Intelligent Caching:** 30-day retention for efficient re-fetching
+- **Retry Logic:** Exponential backoff for failed requests
+
+### Quick Start
+
+```bash
+# Load all sports (2020-2024)
+python scripts/load_and_validate_games.py
+
+# Load specific sports
+python scripts/load_and_validate_games.py --sports NBA NFL
+
+# Custom date range
+python scripts/load_and_validate_games.py --start-year 2022 --end-year 2024
+```
+
+**Documentation:**
+- [Historical Data Implementation Guide](HISTORICAL_DATA_IMPLEMENTATION.md)
+- [Scripts Documentation](scripts/README.md)
+- [Data Structure Guide](data/README.md)
 
 ## 📅 Development Timeline
 
