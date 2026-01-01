@@ -1,0 +1,22 @@
+[
+  {
+    "home_team": "Boston Celtics",
+    "away_team": "Dallas Mavericks",
+    "commence_time": "2024-06-18T00:38:34Z",
+    "num_bookmakers": 5,
+    "moneyline": {
+      "home": null,
+      "away": null
+    },
+    "spread": {
+      "line": -18.3,
+      "home_odds": -70,
+      "away_odds": -47
+    },
+    "total": {
+      "line": 198.5,
+      "over_odds": 7,
+      "under_odds": -139
+    }
+  }
+]

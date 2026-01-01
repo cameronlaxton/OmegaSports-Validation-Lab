@@ -1,0 +1,102 @@
+[
+  {
+    "home_team": "Brooklyn Nets",
+    "away_team": "Atlanta Hawks",
+    "commence_time": "2024-03-02T20:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -121,
+      "away": 102
+    },
+    "spread": {
+      "line": -1.7,
+      "home_odds": -108,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 220.3,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Miami Heat",
+    "away_team": "Utah Jazz",
+    "commence_time": "2024-03-02T22:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -305,
+      "away": 247
+    },
+    "spread": {
+      "line": -7.5,
+      "home_odds": -109,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 223.3,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Memphis Grizzlies",
+    "away_team": "Portland Trail Blazers",
+    "commence_time": "2024-03-03T01:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -139,
+      "away": 118
+    },
+    "spread": {
+      "line": -2.5,
+      "home_odds": -112,
+      "away_odds": -107
+    },
+    "total": {
+      "line": 209.0,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Los Angeles Lakers",
+    "away_team": "Denver Nuggets",
+    "commence_time": "2024-03-03T01:40:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -110,
+      "away": -108
+    },
+    "spread": {
+      "line": -0.5,
+      "home_odds": -107,
+      "away_odds": -94
+    },
+    "total": {
+      "line": 228.2,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Phoenix Suns",
+    "away_team": "Houston Rockets",
+    "commence_time": "2024-03-03T02:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -459,
+      "away": 355
+    },
+    "spread": {
+      "line": -9.8,
+      "home_odds": -112,
+      "away_odds": -107
+    },
+    "total": {
+      "line": 233.1,
+      "over_odds": -110,
+      "under_odds": -108
+    }
+  }
+]

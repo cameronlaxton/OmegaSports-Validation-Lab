@@ -1,0 +1,122 @@
+[
+  {
+    "home_team": "Brooklyn Nets",
+    "away_team": "Boston Celtics",
+    "commence_time": "2024-02-14T00:40:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": 294,
+      "away": -372
+    },
+    "spread": {
+      "line": 8.5,
+      "home_odds": -107,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 227.8,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Orlando Magic",
+    "away_team": "Oklahoma City Thunder",
+    "commence_time": "2024-02-14T00:40:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": 132,
+      "away": -155
+    },
+    "spread": {
+      "line": 3.2,
+      "home_odds": -108,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 224.2,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Milwaukee Bucks",
+    "away_team": "Miami Heat",
+    "commence_time": "2024-02-14T01:00:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -333,
+      "away": 266
+    },
+    "spread": {
+      "line": -8.0,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 223.7,
+      "over_odds": -107,
+      "under_odds": -112
+    }
+  },
+  {
+    "home_team": "Portland Trail Blazers",
+    "away_team": "Minnesota Timberwolves",
+    "commence_time": "2024-02-14T03:10:00Z",
+    "num_bookmakers": 10,
+    "moneyline": {
+      "home": 298,
+      "away": -382
+    },
+    "spread": {
+      "line": 8.6,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 215.4,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Phoenix Suns",
+    "away_team": "Sacramento Kings",
+    "commence_time": "2024-02-14T03:10:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -190,
+      "away": 161
+    },
+    "spread": {
+      "line": -5.0,
+      "home_odds": -109,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 245.0,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Los Angeles Lakers",
+    "away_team": "Detroit Pistons",
+    "commence_time": "2024-02-14T03:40:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -592,
+      "away": 435
+    },
+    "spread": {
+      "line": -10.9,
+      "home_odds": -107,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 240.4,
+      "over_odds": -111,
+      "under_odds": -108
+    }
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "home_team": "Philadelphia 76ers",
+    "away_team": "Denver Nuggets",
+    "commence_time": "2024-01-17T00:40:00Z",
+    "num_bookmakers": 9,
+    "moneyline": {
+      "home": -174,
+      "away": 146
+    },
+    "spread": {
+      "line": -4.4,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 227.2,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Phoenix Suns",
+    "away_team": "Sacramento Kings",
+    "commence_time": "2024-01-17T02:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -202,
+      "away": 170
+    },
+    "spread": {
+      "line": -5.0,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 243.0,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Los Angeles Clippers",
+    "away_team": "Oklahoma City Thunder",
+    "commence_time": "2024-01-17T03:10:00Z",
+    "num_bookmakers": 10,
+    "moneyline": {
+      "home": -202,
+      "away": 169
+    },
+    "spread": {
+      "line": -5.5,
+      "home_odds": -111,
+      "away_odds": -108
+    },
+    "total": {
+      "line": 236.5,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  }
+]

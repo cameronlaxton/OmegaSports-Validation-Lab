@@ -1,0 +1,102 @@
+[
+  {
+    "home_team": "Indiana Pacers",
+    "away_team": "Denver Nuggets",
+    "commence_time": "2024-01-24T00:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": 137,
+      "away": -163
+    },
+    "spread": {
+      "line": 3.6,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 242.8,
+      "over_odds": -111,
+      "under_odds": -108
+    }
+  },
+  {
+    "home_team": "Brooklyn Nets",
+    "away_team": "New York Knicks",
+    "commence_time": "2024-01-24T00:40:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": 155,
+      "away": -185
+    },
+    "spread": {
+      "line": 4.4,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 223.1,
+      "over_odds": -94,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "New Orleans Pelicans",
+    "away_team": "Utah Jazz",
+    "commence_time": "2024-01-24T01:10:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -222,
+      "away": 184
+    },
+    "spread": {
+      "line": -5.5,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 238.8,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Oklahoma City Thunder",
+    "away_team": "Portland Trail Blazers",
+    "commence_time": "2024-01-24T01:10:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -1113,
+      "away": 695
+    },
+    "spread": {
+      "line": -14.0,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 235.6,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Los Angeles Clippers",
+    "away_team": "Los Angeles Lakers",
+    "commence_time": "2024-01-24T03:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -335,
+      "away": 267
+    },
+    "spread": {
+      "line": -8.0,
+      "home_odds": -109,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 229.5,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  }
+]

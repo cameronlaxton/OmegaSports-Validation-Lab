@@ -1,0 +1,122 @@
+[
+  {
+    "home_team": "Orlando Magic",
+    "away_team": "Philadelphia 76ers",
+    "commence_time": "2023-12-28T00:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -143,
+      "away": 121
+    },
+    "spread": {
+      "line": -2.7,
+      "home_odds": -110,
+      "away_odds": -108
+    },
+    "total": {
+      "line": 225.8,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Washington Wizards",
+    "away_team": "Toronto Raptors",
+    "commence_time": "2023-12-28T00:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": 209,
+      "away": -255
+    },
+    "spread": {
+      "line": 6.5,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 238.9,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Brooklyn Nets",
+    "away_team": "Milwaukee Bucks",
+    "commence_time": "2023-12-28T00:40:00Z",
+    "num_bookmakers": 9,
+    "moneyline": {
+      "home": 143,
+      "away": -171
+    },
+    "spread": {
+      "line": 3.8,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 240.7,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Houston Rockets",
+    "away_team": "Phoenix Suns",
+    "commence_time": "2023-12-28T01:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": 110,
+      "away": -130
+    },
+    "spread": {
+      "line": 2.3,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 225.4,
+      "over_odds": -111,
+      "under_odds": -108
+    }
+  },
+  {
+    "home_team": "Oklahoma City Thunder",
+    "away_team": "New York Knicks",
+    "commence_time": "2023-12-28T01:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -147,
+      "away": 125
+    },
+    "spread": {
+      "line": -3.0,
+      "home_odds": -110,
+      "away_odds": -108
+    },
+    "total": {
+      "line": 240.0,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Dallas Mavericks",
+    "away_team": "Cleveland Cavaliers",
+    "commence_time": "2023-12-28T01:40:00Z",
+    "num_bookmakers": 9,
+    "moneyline": {
+      "home": -177,
+      "away": 150
+    },
+    "spread": {
+      "line": -4.1,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 231.5,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  }
+]

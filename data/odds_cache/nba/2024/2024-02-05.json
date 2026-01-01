@@ -1,0 +1,122 @@
+[
+  {
+    "home_team": "Charlotte Hornets",
+    "away_team": "Los Angeles Lakers",
+    "commence_time": "2024-02-06T00:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": 413,
+      "away": -549
+    },
+    "spread": {
+      "line": 10.7,
+      "home_odds": -108,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 228.1,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Cleveland Cavaliers",
+    "away_team": "Sacramento Kings",
+    "commence_time": "2024-02-06T00:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -206,
+      "away": 172
+    },
+    "spread": {
+      "line": -5.4,
+      "home_odds": -107,
+      "away_odds": -112
+    },
+    "total": {
+      "line": 235.0,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Philadelphia 76ers",
+    "away_team": "Dallas Mavericks",
+    "commence_time": "2024-02-06T00:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": 49,
+      "away": -118
+    },
+    "spread": {
+      "line": 1.5,
+      "home_odds": -109,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 242.8,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Atlanta Hawks",
+    "away_team": "Los Angeles Clippers",
+    "commence_time": "2024-02-06T00:40:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": 122,
+      "away": -145
+    },
+    "spread": {
+      "line": 2.6,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 241.9,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Brooklyn Nets",
+    "away_team": "Golden State Warriors",
+    "commence_time": "2024-02-06T00:40:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -128,
+      "away": 108
+    },
+    "spread": {
+      "line": -1.8,
+      "home_odds": -111,
+      "away_odds": -108
+    },
+    "total": {
+      "line": 237.8,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "New Orleans Pelicans",
+    "away_team": "Toronto Raptors",
+    "commence_time": "2024-02-06T01:10:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -643,
+      "away": 465
+    },
+    "spread": {
+      "line": -11.5,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 230.8,
+      "over_odds": -108,
+      "under_odds": -111
+    }
+  }
+]

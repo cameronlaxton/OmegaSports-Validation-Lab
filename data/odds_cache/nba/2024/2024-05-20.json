@@ -1,0 +1,42 @@
+[
+  {
+    "home_team": "Boston Celtics",
+    "away_team": "Indiana Pacers",
+    "commence_time": "2024-05-22T00:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -428,
+      "away": 335
+    },
+    "spread": {
+      "line": -9.5,
+      "home_odds": -111,
+      "away_odds": -108
+    },
+    "total": {
+      "line": 221.8,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Minnesota Timberwolves",
+    "away_team": "Dallas Mavericks",
+    "commence_time": "2024-05-23T00:35:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -181,
+      "away": 154
+    },
+    "spread": {
+      "line": -4.4,
+      "home_odds": -108,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 206.2,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  }
+]

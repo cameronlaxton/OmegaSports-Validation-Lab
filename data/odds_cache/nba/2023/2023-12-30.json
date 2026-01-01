@@ -1,0 +1,122 @@
+[
+  {
+    "home_team": "Utah Jazz",
+    "away_team": "Miami Heat",
+    "commence_time": "2023-12-30T22:10:00Z",
+    "num_bookmakers": 9,
+    "moneyline": {
+      "home": 80,
+      "away": -122
+    },
+    "spread": {
+      "line": 1.5,
+      "home_odds": -108,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 227.2,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Detroit Pistons",
+    "away_team": "Toronto Raptors",
+    "commence_time": "2023-12-30T23:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": 159,
+      "away": -188
+    },
+    "spread": {
+      "line": 4.5,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 230.2,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Indiana Pacers",
+    "away_team": "New York Knicks",
+    "commence_time": "2023-12-31T00:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -164,
+      "away": 140
+    },
+    "spread": {
+      "line": -3.6,
+      "home_odds": -112,
+      "away_odds": -106
+    },
+    "total": {
+      "line": 247.0,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Chicago Bulls",
+    "away_team": "Philadelphia 76ers",
+    "commence_time": "2023-12-31T01:10:00Z",
+    "num_bookmakers": 9,
+    "moneyline": {
+      "home": -120,
+      "away": 100
+    },
+    "spread": {
+      "line": -1.4,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 222.9,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Minnesota Timberwolves",
+    "away_team": "Los Angeles Lakers",
+    "commence_time": "2023-12-31T01:10:00Z",
+    "num_bookmakers": 12,
+    "moneyline": {
+      "home": -168,
+      "away": 143
+    },
+    "spread": {
+      "line": -4.0,
+      "home_odds": -109,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 226.2,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Golden State Warriors",
+    "away_team": "Dallas Mavericks",
+    "commence_time": "2023-12-31T01:40:00Z",
+    "num_bookmakers": 9,
+    "moneyline": {
+      "home": -178,
+      "away": 149
+    },
+    "spread": {
+      "line": -4.6,
+      "home_odds": -109,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 240.8,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  }
+]

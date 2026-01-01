@@ -1,0 +1,282 @@
+[
+  {
+    "home_team": "Charlotte Hornets",
+    "away_team": "Dallas Mavericks",
+    "commence_time": "2024-04-09T23:10:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": 406,
+      "away": -552
+    },
+    "spread": {
+      "line": 10.5,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 219.5,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Philadelphia 76ers",
+    "away_team": "Detroit Pistons",
+    "commence_time": "2024-04-09T23:10:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": -1551,
+      "away": 850
+    },
+    "spread": {
+      "line": -15.0,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 219.8,
+      "over_odds": -109,
+      "under_odds": -111
+    }
+  },
+  {
+    "home_team": "Toronto Raptors",
+    "away_team": "Indiana Pacers",
+    "commence_time": "2024-04-09T23:10:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": 267,
+      "away": -337
+    },
+    "spread": {
+      "line": 8.0,
+      "home_odds": -109,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 240.2,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Milwaukee Bucks",
+    "away_team": "Boston Celtics",
+    "commence_time": "2024-04-09T23:30:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": -111,
+      "away": -107
+    },
+    "spread": {
+      "line": -0.2,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 227.9,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Atlanta Hawks",
+    "away_team": "Miami Heat",
+    "commence_time": "2024-04-09T23:40:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": 117,
+      "away": -139
+    },
+    "spread": {
+      "line": 2.7,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 221.5,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Chicago Bulls",
+    "away_team": "New York Knicks",
+    "commence_time": "2024-04-10T00:10:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": 114,
+      "away": -135
+    },
+    "spread": {
+      "line": 2.3,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 213.3,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Houston Rockets",
+    "away_team": "Orlando Magic",
+    "commence_time": "2024-04-10T00:10:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": 103,
+      "away": -122
+    },
+    "spread": {
+      "line": 1.5,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 211.2,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Memphis Grizzlies",
+    "away_team": "San Antonio Spurs",
+    "commence_time": "2024-04-10T00:10:00Z",
+    "num_bookmakers": 5,
+    "moneyline": {
+      "home": 118,
+      "away": -139
+    },
+    "spread": {
+      "line": 2.5,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 215.0,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Minnesota Timberwolves",
+    "away_team": "Washington Wizards",
+    "commence_time": "2024-04-10T00:10:00Z",
+    "num_bookmakers": 4,
+    "moneyline": {
+      "home": -1616,
+      "away": 856
+    },
+    "spread": {
+      "line": -16.5,
+      "home_odds": -111,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 222.5,
+      "over_odds": -109,
+      "under_odds": -111
+    }
+  },
+  {
+    "home_team": "Oklahoma City Thunder",
+    "away_team": "Sacramento Kings",
+    "commence_time": "2024-04-10T00:10:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": -134,
+      "away": 114
+    },
+    "spread": {
+      "line": -2.5,
+      "home_odds": -111,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 227.9,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Utah Jazz",
+    "away_team": "Denver Nuggets",
+    "commence_time": "2024-04-10T01:10:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": 625,
+      "away": -983
+    },
+    "spread": {
+      "line": 13.5,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 224.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Los Angeles Lakers",
+    "away_team": "Golden State Warriors",
+    "commence_time": "2024-04-10T02:10:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": -130,
+      "away": 110
+    },
+    "spread": {
+      "line": -2.0,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 232.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Phoenix Suns",
+    "away_team": "Los Angeles Clippers",
+    "commence_time": "2024-04-10T02:10:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": -148,
+      "away": 125
+    },
+    "spread": {
+      "line": -3.3,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 225.3,
+      "over_odds": -111,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Portland Trail Blazers",
+    "away_team": "New Orleans Pelicans",
+    "commence_time": "2024-04-10T02:10:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": 371,
+      "away": -500
+    },
+    "spread": {
+      "line": 10.0,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 210.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  }
+]

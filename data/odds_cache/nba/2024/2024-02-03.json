@@ -1,0 +1,122 @@
+[
+  {
+    "home_team": "Philadelphia 76ers",
+    "away_team": "Brooklyn Nets",
+    "commence_time": "2024-02-03T23:10:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -178,
+      "away": 151
+    },
+    "spread": {
+      "line": -4.1,
+      "home_odds": -112,
+      "away_odds": -93
+    },
+    "total": {
+      "line": 233.6,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Atlanta Hawks",
+    "away_team": "Golden State Warriors",
+    "commence_time": "2024-02-04T00:40:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -140,
+      "away": 119
+    },
+    "spread": {
+      "line": -2.6,
+      "home_odds": -112,
+      "away_odds": -107
+    },
+    "total": {
+      "line": 246.4,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Chicago Bulls",
+    "away_team": "Sacramento Kings",
+    "commence_time": "2024-02-04T01:10:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -121,
+      "away": 84
+    },
+    "spread": {
+      "line": -1.4,
+      "home_odds": -110,
+      "away_odds": -108
+    },
+    "total": {
+      "line": 228.9,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "San Antonio Spurs",
+    "away_team": "Cleveland Cavaliers",
+    "commence_time": "2024-02-04T01:40:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": 348,
+      "away": -448
+    },
+    "spread": {
+      "line": 9.5,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 229.5,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Dallas Mavericks",
+    "away_team": "Milwaukee Bucks",
+    "commence_time": "2024-02-04T01:40:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": 158,
+      "away": -188
+    },
+    "spread": {
+      "line": 4.9,
+      "home_odds": -109,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 246.6,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "New York Knicks",
+    "away_team": "Los Angeles Lakers",
+    "commence_time": "2024-02-04T01:40:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -191,
+      "away": 161
+    },
+    "spread": {
+      "line": -4.5,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 225.8,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  }
+]

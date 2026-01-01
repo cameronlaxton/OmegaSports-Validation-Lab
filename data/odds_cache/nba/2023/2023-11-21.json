@@ -1,0 +1,202 @@
+[
+  {
+    "home_team": "Orlando Magic",
+    "away_team": "Toronto Raptors",
+    "commence_time": "2023-11-22T00:10:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -122,
+      "away": 103
+    },
+    "spread": {
+      "line": -1.5,
+      "home_odds": -109,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 215.2,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Philadelphia 76ers",
+    "away_team": "Cleveland Cavaliers",
+    "commence_time": "2023-11-22T00:30:00Z",
+    "num_bookmakers": 7,
+    "moneyline": {
+      "home": -317,
+      "away": 255
+    },
+    "spread": {
+      "line": -7.5,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 220.6,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Atlanta Hawks",
+    "away_team": "Indiana Pacers",
+    "commence_time": "2023-11-22T00:40:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -171,
+      "away": 144
+    },
+    "spread": {
+      "line": -3.9,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 251.1,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Phoenix Suns",
+    "away_team": "Portland Trail Blazers",
+    "commence_time": "2023-11-22T02:10:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -927,
+      "away": 605
+    },
+    "spread": {
+      "line": -13.3,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 224.9,
+      "over_odds": -111,
+      "under_odds": -108
+    }
+  },
+  {
+    "home_team": "Los Angeles Lakers",
+    "away_team": "Utah Jazz",
+    "commence_time": "2023-11-22T03:00:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": -330,
+      "away": 262
+    },
+    "spread": {
+      "line": -7.7,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 235.9,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "New York Knicks",
+    "away_team": "Milwaukee Bucks",
+    "commence_time": "2023-12-25T17:00:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": 140,
+      "away": -172
+    },
+    "spread": {
+      "line": 3.8,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": null,
+      "over_odds": null,
+      "under_odds": null
+    }
+  },
+  {
+    "home_team": "Denver Nuggets",
+    "away_team": "Golden State Warriors",
+    "commence_time": "2023-12-25T19:30:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": -205,
+      "away": 166
+    },
+    "spread": {
+      "line": -5.0,
+      "home_odds": -111,
+      "away_odds": -109
+    },
+    "total": {
+      "line": null,
+      "over_odds": null,
+      "under_odds": null
+    }
+  },
+  {
+    "home_team": "Los Angeles Lakers",
+    "away_team": "Boston Celtics",
+    "commence_time": "2023-12-25T22:00:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": 103,
+      "away": -124
+    },
+    "spread": {
+      "line": 1.5,
+      "home_odds": -108,
+      "away_odds": -112
+    },
+    "total": {
+      "line": null,
+      "over_odds": null,
+      "under_odds": null
+    }
+  },
+  {
+    "home_team": "Miami Heat",
+    "away_team": "Philadelphia 76ers",
+    "commence_time": "2023-12-26T01:00:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": -127,
+      "away": 106
+    },
+    "spread": {
+      "line": -1.8,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": null,
+      "over_odds": null,
+      "under_odds": null
+    }
+  },
+  {
+    "home_team": "Phoenix Suns",
+    "away_team": "Dallas Mavericks",
+    "commence_time": "2023-12-26T03:30:00Z",
+    "num_bookmakers": 3,
+    "moneyline": {
+      "home": -201,
+      "away": 163
+    },
+    "spread": {
+      "line": -5.0,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": null,
+      "over_odds": null,
+      "under_odds": null
+    }
+  }
+]

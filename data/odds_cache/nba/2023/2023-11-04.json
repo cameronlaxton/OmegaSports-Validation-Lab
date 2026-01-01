@@ -1,0 +1,262 @@
+[
+  {
+    "home_team": "Philadelphia 76ers",
+    "away_team": "Phoenix Suns",
+    "commence_time": "2023-11-04T17:00:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -173,
+      "away": 146
+    },
+    "spread": {
+      "line": -4.1,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 220.0,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "New Orleans Pelicans",
+    "away_team": "Atlanta Hawks",
+    "commence_time": "2023-11-04T23:00:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -147,
+      "away": 124
+    },
+    "spread": {
+      "line": -2.8,
+      "home_odds": -111,
+      "away_odds": -93
+    },
+    "total": {
+      "line": 232.1,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Indiana Pacers",
+    "away_team": "Charlotte Hornets",
+    "commence_time": "2023-11-04T23:00:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -169,
+      "away": 140
+    },
+    "spread": {
+      "line": -3.8,
+      "home_odds": -110,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 237.9,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Orlando Magic",
+    "away_team": "Los Angeles Lakers",
+    "commence_time": "2023-11-04T23:10:00Z",
+    "num_bookmakers": 16,
+    "moneyline": {
+      "home": 138,
+      "away": -162
+    },
+    "spread": {
+      "line": 3.5,
+      "home_odds": -109,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 219.5,
+      "over_odds": -110,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Houston Rockets",
+    "away_team": "Sacramento Kings",
+    "commence_time": "2023-11-05T00:00:00Z",
+    "num_bookmakers": 14,
+    "moneyline": {
+      "home": 123,
+      "away": -147
+    },
+    "spread": {
+      "line": 3.0,
+      "home_odds": -95,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 221.3,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Brooklyn Nets",
+    "away_team": "Boston Celtics",
+    "commence_time": "2023-11-05T00:10:00Z",
+    "num_bookmakers": 15,
+    "moneyline": {
+      "home": 327,
+      "away": -429
+    },
+    "spread": {
+      "line": 9.4,
+      "home_odds": -108,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 230.5,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Minnesota Timberwolves",
+    "away_team": "Utah Jazz",
+    "commence_time": "2023-11-05T00:10:00Z",
+    "num_bookmakers": 16,
+    "moneyline": {
+      "home": -306,
+      "away": 247
+    },
+    "spread": {
+      "line": -7.6,
+      "home_odds": -110,
+      "away_odds": -108
+    },
+    "total": {
+      "line": 225.7,
+      "over_odds": -109,
+      "under_odds": -109
+    }
+  },
+  {
+    "home_team": "Denver Nuggets",
+    "away_team": "Chicago Bulls",
+    "commence_time": "2023-11-05T01:00:00Z",
+    "num_bookmakers": 13,
+    "moneyline": {
+      "home": -420,
+      "away": 320
+    },
+    "spread": {
+      "line": -9.3,
+      "home_odds": -108,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 216.5,
+      "over_odds": -109,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "New York Knicks",
+    "away_team": "Milwaukee Bucks",
+    "commence_time": "2023-12-25T17:00:00Z",
+    "num_bookmakers": 4,
+    "moneyline": {
+      "home": 134,
+      "away": -163
+    },
+    "spread": {
+      "line": 3.8,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 221.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Denver Nuggets",
+    "away_team": "Golden State Warriors",
+    "commence_time": "2023-12-25T19:30:00Z",
+    "num_bookmakers": 4,
+    "moneyline": {
+      "home": -202,
+      "away": 165
+    },
+    "spread": {
+      "line": -5.0,
+      "home_odds": -111,
+      "away_odds": -109
+    },
+    "total": {
+      "line": 230.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Los Angeles Lakers",
+    "away_team": "Boston Celtics",
+    "commence_time": "2023-12-25T22:00:00Z",
+    "num_bookmakers": 4,
+    "moneyline": {
+      "home": 104,
+      "away": -125
+    },
+    "spread": {
+      "line": 1.6,
+      "home_odds": -109,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 236.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Miami Heat",
+    "away_team": "Philadelphia 76ers",
+    "commence_time": "2023-12-26T01:00:00Z",
+    "num_bookmakers": 4,
+    "moneyline": {
+      "home": -128,
+      "away": 107
+    },
+    "spread": {
+      "line": -1.8,
+      "home_odds": -110,
+      "away_odds": -110
+    },
+    "total": {
+      "line": 218.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  },
+  {
+    "home_team": "Phoenix Suns",
+    "away_team": "Dallas Mavericks",
+    "commence_time": "2023-12-26T03:30:00Z",
+    "num_bookmakers": 4,
+    "moneyline": {
+      "home": -238,
+      "away": 193
+    },
+    "spread": {
+      "line": -6.0,
+      "home_odds": -109,
+      "away_odds": -111
+    },
+    "total": {
+      "line": 225.5,
+      "over_odds": -110,
+      "under_odds": -110
+    }
+  }
+]
