@@ -512,3 +512,340 @@ class MultiSourceHistoricalScraper:
         
         logger.info(f"Total {sport_upper} games scraped: {len(all_games)}")
         return all_games
+
+
+class OddsPortalScraper:
+    """
+    Scraper for OddsPortal.com historical betting odds.
+    
+    OddsPortal has minimal bot detection and provides comprehensive historical
+    betting lines for multiple sports dating back years.
+    """
+    
+    BASE_URL = "https://www.oddsportal.com"
+    
+    def __init__(self):
+        """Initialize the scraper with rate limiting."""
+        self.rate_limiter = RateLimiter(requests_per_second=0.33)  # 1 request per 3 seconds
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+        })
+        logger.info("OddsPortalScraper initialized")
+    
+    def scrape_game_odds(
+        self,
+        sport: str,
+        date: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Scrape historical game odds for a specific date.
+        
+        Args:
+            sport: Sport name (NBA, NFL, etc.)
+            date: Date in YYYY-MM-DD format
+        
+        Returns:
+            List of games with historical betting odds
+        """
+        self.rate_limiter.wait()
+        
+        # Map sports to OddsPortal URLs
+        sport_paths = {
+            "NBA": "basketball/usa/nba",
+            "NFL": "american-football/usa/nfl",
+            "NCAAB": "basketball/usa/ncaa",
+            "NCAAF": "american-football/usa/ncaa",
+            "NHL": "hockey/usa/nhl",
+            "MLB": "baseball/usa/mlb"
+        }
+        
+        sport_path = sport_paths.get(sport.upper())
+        if not sport_path:
+            logger.warning(f"Sport {sport} not supported by OddsPortal scraper")
+            return []
+        
+        games = []
+        
+        try:
+            # OddsPortal uses date-based URLs
+            # Format: /basketball/usa/nba/results/#/page/1/
+            url = f"{self.BASE_URL}/{sport_path}/results/"
+            
+            response = self.session.get(url, timeout=30)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Parse game rows from OddsPortal
+            # Note: OddsPortal's HTML structure may change, this is a template
+            game_rows = soup.find_all('tr', class_='table-main__row')
+            
+            for row in game_rows:
+                try:
+                    # Extract game information
+                    # This is a simplified parser - actual implementation needs
+                    # to match OddsPortal's current HTML structure
+                    
+                    teams_cell = row.find('td', class_='name')
+                    if not teams_cell:
+                        continue
+                    
+                    teams_text = teams_cell.get_text(strip=True)
+                    # Typically "Home Team - Away Team"
+                    if ' - ' in teams_text:
+                        home_team, away_team = teams_text.split(' - ', 1)
+                    else:
+                        continue
+                    
+                    # Extract odds (moneyline, spread, total)
+                    odds_cells = row.find_all('td', class_='odds-cell')
+                    
+                    game_data = {
+                        "date": date,
+                        "sport": sport,
+                        "home_team": home_team.strip(),
+                        "away_team": away_team.strip(),
+                        "source": "oddsportal"
+                    }
+                    
+                    # Parse odds from cells (structure varies by sport)
+                    if len(odds_cells) >= 2:
+                        # First cell typically contains home odds
+                        # Second cell contains away odds
+                        game_data["moneyline"] = {
+                            "home": self._parse_odds_value(odds_cells[0].get_text(strip=True)),
+                            "away": self._parse_odds_value(odds_cells[1].get_text(strip=True))
+                        }
+                    
+                    games.append(game_data)
+                    
+                except Exception as e:
+                    logger.debug(f"Error parsing game row: {e}")
+                    continue
+            
+            logger.info(f"✓ Scraped {len(games)} games from OddsPortal for {date}")
+            
+        except requests.RequestException as e:
+            logger.error(f"Error scraping OddsPortal: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error in OddsPortal scraper: {e}")
+        
+        return games
+    
+    def scrape_player_props(
+        self,
+        sport: str,
+        date: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Scrape historical player prop odds.
+        
+        Note: OddsPortal has limited historical player prop data.
+        This is a placeholder for future implementation.
+        
+        Args:
+            sport: Sport name
+            date: Date in YYYY-MM-DD format
+        
+        Returns:
+            List of player props (may be empty)
+        """
+        logger.info("OddsPortal player props scraping not yet implemented")
+        return []
+    
+    def _parse_odds_value(self, odds_text: str) -> Optional[float]:
+        """
+        Parse odds string to American odds format.
+        
+        Args:
+            odds_text: Odds string (could be decimal, fractional, or American)
+        
+        Returns:
+            American odds value or None
+        """
+        if not odds_text or odds_text == '-':
+            return None
+        
+        try:
+            # If already in American format (starts with + or -)
+            if odds_text.startswith(('+', '-')):
+                return float(odds_text)
+            
+            # If decimal format (e.g., "1.95")
+            if '.' in odds_text:
+                decimal = float(odds_text)
+                # Convert decimal to American
+                if decimal >= 2.0:
+                    return round((decimal - 1) * 100)
+                else:
+                    return round(-100 / (decimal - 1))
+            
+            # If fractional format (e.g., "10/11")
+            if '/' in odds_text:
+                num, denom = odds_text.split('/')
+                decimal = (float(num) / float(denom)) + 1
+                if decimal >= 2.0:
+                    return round((decimal - 1) * 100)
+                else:
+                    return round(-100 / (decimal - 1))
+        
+        except Exception as e:
+            logger.debug(f"Could not parse odds '{odds_text}': {e}")
+        
+        return None
+
+
+class CoversOddsHistoryScraper:
+    """
+    Scraper for Covers.com historical betting odds.
+    
+    Covers provides historical odds with minimal bot protection and good
+    coverage for NBA, NFL, and other major sports.
+    """
+    
+    BASE_URL = "https://www.covers.com"
+    
+    def __init__(self):
+        """Initialize the scraper with rate limiting."""
+        self.rate_limiter = RateLimiter(requests_per_second=0.33)  # 1 request per 3 seconds
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+        })
+        logger.info("CoversOddsHistoryScraper initialized")
+    
+    def scrape_game_odds(
+        self,
+        sport: str,
+        date: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Scrape historical game odds from Covers.
+        
+        Args:
+            sport: Sport name (NBA, NFL, etc.)
+            date: Date in YYYY-MM-DD format
+        
+        Returns:
+            List of games with historical betting odds
+        """
+        self.rate_limiter.wait()
+        
+        # Map sports to Covers URLs
+        sport_paths = {
+            "NBA": "sport/basketball/nba",
+            "NFL": "sport/football/nfl",
+            "NCAAB": "sport/basketball/ncaab",
+            "NCAAF": "sport/football/ncaaf",
+            "NHL": "sport/hockey/nhl",
+            "MLB": "sport/baseball/mlb"
+        }
+        
+        sport_path = sport_paths.get(sport.upper())
+        if not sport_path:
+            logger.warning(f"Sport {sport} not supported by Covers scraper")
+            return []
+        
+        games = []
+        
+        try:
+            # Covers uses date-based URLs for historical odds
+            # Format varies, but typically: /sport/basketball/nba/matchups
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            url = f"{self.BASE_URL}/{sport_path}/matchups"
+            
+            params = {
+                "selectedDate": date_obj.strftime("%Y-%m-%d")
+            }
+            
+            response = self.session.get(url, params=params, timeout=30)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Parse matchup data from Covers
+            # Note: Covers HTML structure may change, this is a template
+            matchup_divs = soup.find_all('div', class_='cmg_matchup_game_box')
+            
+            for matchup in matchup_divs:
+                try:
+                    # Extract team names
+                    teams = matchup.find_all('div', class_='cmg_matchup_list_team_name')
+                    if len(teams) < 2:
+                        continue
+                    
+                    away_team = teams[0].get_text(strip=True)
+                    home_team = teams[1].get_text(strip=True)
+                    
+                    # Extract odds (spread, moneyline, total)
+                    odds_sections = matchup.find_all('div', class_='cmg_matchup_list_score')
+                    
+                    game_data = {
+                        "date": date,
+                        "sport": sport,
+                        "home_team": home_team,
+                        "away_team": away_team,
+                        "source": "covers"
+                    }
+                    
+                    # Parse spread and moneyline from odds sections
+                    if odds_sections:
+                        # Covers typically shows: Spread | Moneyline | Total
+                        for section in odds_sections:
+                            odds_text = section.get_text(strip=True)
+                            
+                            # Parse spread (e.g., "-3.5 -110")
+                            spread_match = re.search(r'([+-]?\d+\.?\d*)\s+([+-]\d+)', odds_text)
+                            if spread_match:
+                                if "spread" not in game_data:
+                                    game_data["spread"] = {
+                                        "line": float(spread_match.group(1)),
+                                        "odds": int(spread_match.group(2))
+                                    }
+                    
+                    games.append(game_data)
+                    
+                except Exception as e:
+                    logger.debug(f"Error parsing matchup: {e}")
+                    continue
+            
+            logger.info(f"✓ Scraped {len(games)} games from Covers for {date}")
+            
+        except requests.RequestException as e:
+            logger.error(f"Error scraping Covers: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error in Covers scraper: {e}")
+        
+        return games
+    
+    def scrape_player_props(
+        self,
+        sport: str,
+        date: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Scrape historical player prop odds from Covers.
+        
+        Covers has some historical player prop data for major sports.
+        
+        Args:
+            sport: Sport name
+            date: Date in YYYY-MM-DD format
+        
+        Returns:
+            List of player props
+        """
+        self.rate_limiter.wait()
+        
+        # Covers player props section
+        logger.info("Covers player props scraping not yet fully implemented")
+        
+        # TODO: Implement Covers player props scraping
+        # Covers has player props at /sport/{sport}/matchups with props tabs
+        
+        return []

@@ -372,3 +372,196 @@ class TheOddsAPIClient:
         except Exception as e:
             logger.error(f"Error checking API usage: {e}")
             return None
+    
+    def fetch_player_props(
+        self,
+        sport: str,
+        date: str,
+        markets: Optional[List[str]] = None,
+        regions: str = "us"
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetch player prop odds for a specific date.
+        
+        Args:
+            sport: Sport name (NBA, NFL, etc.)
+            date: Date in YYYY-MM-DD format
+            markets: List of player prop markets (player_points, player_rebounds, etc.)
+            regions: Regions (us, uk, eu, au)
+        
+        Returns:
+            List of player props with betting lines
+        """
+        if not self.api_key:
+            logger.debug("No API key - skipping player props fetch")
+            return []
+        
+        # Default markets based on sport
+        if markets is None:
+            if sport.upper() in ["NBA", "NCAAB"]:
+                markets = [
+                    "player_points",
+                    "player_rebounds",
+                    "player_assists",
+                    "player_threes",
+                    "player_blocks",
+                    "player_steals"
+                ]
+            elif sport.upper() in ["NFL", "NCAAF"]:
+                markets = [
+                    "player_pass_yds",
+                    "player_pass_tds",
+                    "player_pass_attempts",
+                    "player_pass_completions",
+                    "player_rush_yds",
+                    "player_rush_attempts",
+                    "player_rush_tds",
+                    "player_receptions",
+                    "player_reception_yds",
+                    "player_reception_tds",
+                    "player_interceptions"
+                ]
+            else:
+                logger.warning(f"No default player prop markets for sport: {sport}")
+                return []
+        
+        # Map sport to API key
+        api_sport = self.SPORT_MAPPING.get(sport.upper())
+        if not api_sport:
+            logger.warning(f"Sport {sport} not supported by The Odds API")
+            return []
+        
+        all_props = []
+        
+        # Fetch each market separately (The Odds API may require this)
+        for market in markets:
+            self._rate_limit()
+            
+            try:
+                url = f"{self.BASE_URL}/sports/{api_sport}/odds"
+                params = {
+                    "apiKey": self.api_key,
+                    "regions": regions,
+                    "markets": market,
+                    "oddsFormat": "american"
+                }
+                
+                # Try historical endpoint first
+                try:
+                    hist_url = f"{self.BASE_URL}/historical/sports/{api_sport}/odds"
+                    hist_params = params.copy()
+                    hist_params["date"] = date + "T12:00:00Z"
+                    
+                    response = self.session.get(hist_url, params=hist_params, timeout=30)
+                    
+                    if response.status_code in [401, 403, 404]:
+                        # Fall back to current odds
+                        response = self.session.get(url, params=params, timeout=30)
+                except Exception:
+                    # Fall back to current odds
+                    response = self.session.get(url, params=params, timeout=30)
+                
+                # Check remaining requests
+                remaining = response.headers.get('x-requests-remaining')
+                if remaining:
+                    logger.debug(f"The Odds API requests remaining: {remaining}")
+                
+                if response.status_code == 401:
+                    logger.error(f"The Odds API authentication failed")
+                    continue
+                elif response.status_code == 422:
+                    logger.warning(f"Player props not available for {date}")
+                    continue
+                
+                response.raise_for_status()
+                data = response.json()
+                
+                # Handle response format
+                if isinstance(data, dict) and 'data' in data:
+                    games_data = data.get('data', [])
+                else:
+                    games_data = data if isinstance(data, list) else []
+                
+                # Parse player props from response
+                props = self._parse_player_props_response(games_data, market, date)
+                all_props.extend(props)
+                
+                logger.info(f"✓ Fetched {len(props)} {market} props for {sport} on {date}")
+                
+            except requests.RequestException as e:
+                logger.error(f"Error fetching player props for {market}: {e}")
+                continue
+        
+        logger.info(f"✓ Total player props fetched: {len(all_props)}")
+        return all_props
+    
+    def _parse_player_props_response(
+        self,
+        data: List[Dict],
+        market: str,
+        date: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Parse player props response from The Odds API.
+        
+        Args:
+            data: API response data
+            market: Market type (e.g., player_points)
+            date: Game date
+        
+        Returns:
+            List of parsed player prop dictionaries
+        """
+        props = []
+        
+        for game in data:
+            game_id = game.get("id")
+            home_team = game.get("home_team", "")
+            away_team = game.get("away_team", "")
+            
+            # Extract bookmaker data
+            bookmakers = game.get("bookmakers", [])
+            
+            for bookmaker in bookmakers:
+                markets_data = bookmaker.get("markets", [])
+                
+                for market_data in markets_data:
+                    if market_data.get("key") != market:
+                        continue
+                    
+                    # Each outcome represents a player prop
+                    outcomes = market_data.get("outcomes", [])
+                    
+                    for outcome in outcomes:
+                        player_name = outcome.get("description", "")
+                        prop_point = outcome.get("point")  # The line (e.g., 27.5 points)
+                        prop_price = outcome.get("price")  # American odds
+                        
+                        # Determine over/under
+                        outcome_name = outcome.get("name", "").lower()
+                        is_over = "over" in outcome_name
+                        
+                        # Create prop dictionary
+                        prop = {
+                            "prop_id": f"{game_id}_{player_name}_{market}".replace(" ", "_"),
+                            "game_id": game_id,
+                            "date": date,
+                            "home_team": home_team,
+                            "away_team": away_team,
+                            "player_name": player_name,
+                            "prop_type": market.replace("player_", ""),
+                            "line": prop_point,
+                            "bookmaker": bookmaker.get("title", ""),
+                            "timestamp": game.get("commence_time", "")
+                        }
+                        
+                        if is_over:
+                            prop["over_line"] = prop_point
+                            prop["over_odds"] = prop_price
+                        else:
+                            prop["under_line"] = prop_point
+                            prop["under_odds"] = prop_price
+                        
+                        props.append(prop)
+        
+        return props

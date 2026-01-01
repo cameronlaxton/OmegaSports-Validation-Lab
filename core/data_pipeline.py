@@ -95,9 +95,10 @@ class DataValidator:
         "points",
         "rebounds",
         "assists",
-        "threes_made",
-        "steals",
-        "blocks",
+        "three_pointers",  # Added
+        "threes_made",  # Legacy, same as three_pointers
+        "steals",  # Moved up
+        "blocks",  # Moved up
         "points_rebounds",
         "points_assists",
         "rebounds_assists",
@@ -107,14 +108,17 @@ class DataValidator:
         "passing_yards",
         "rushing_yards",
         "receiving_yards",
+        "receptions",  # Moved up
+        "rushing_attempts",  # Added
+        "passing_attempts",  # Added
+        "passing_completions",  # Added
         "touchdowns",
-        "receptions",
-        "completion_pct",
-        "interceptions",
-        "sacks",
         "passing_tds",
         "rushing_tds",
         "receiving_tds",
+        "interceptions",
+        "completion_pct",
+        "sacks",
     ]
 
     @classmethod

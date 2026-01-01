@@ -257,3 +257,257 @@ class BallDontLieAPIClient:
         except requests.RequestException as e:
             logger.error(f"Error fetching player season stats: {e}")
             return None
+    
+    def get_players(
+        self,
+        search: Optional[str] = None,
+        team_id: Optional[int] = None,
+        per_page: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        Get players from BallDontLie API with optional filtering.
+        
+        Args:
+            search: Player name search query
+            team_id: Filter by team ID
+            per_page: Results per page (max 100)
+        
+        Returns:
+            List of player dictionaries
+        """
+        if not self.api_key:
+            logger.warning("No API key configured for BallDontLie")
+            return []
+        
+        self._rate_limit()
+        
+        try:
+            url = f"{self.BASE_URL}/players"
+            params = {"per_page": min(per_page, 100)}
+            
+            if search:
+                params["search"] = search
+            if team_id is not None:
+                params["team_ids[]"] = [team_id]
+            
+            response = self.session.get(url, params=params, timeout=30)
+            response.raise_for_status()
+            
+            data = response.json()
+            players = data.get("data", [])
+            
+            # Handle pagination for large result sets
+            total_pages = data.get("meta", {}).get("total_pages", 1)
+            current_page = data.get("meta", {}).get("current_page", 1)
+            
+            # Fetch remaining pages if needed
+            while current_page < total_pages:
+                self._rate_limit()
+                current_page += 1
+                params["page"] = current_page
+                
+                response = self.session.get(url, params=params, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                players.extend(data.get("data", []))
+            
+            logger.info(f"Fetched {len(players)} players")
+            return players
+            
+        except requests.RequestException as e:
+            logger.error(f"Error fetching players: {e}")
+            return []
+    
+    def get_teams(self) -> List[Dict[str, Any]]:
+        """
+        Get all teams from BallDontLie API.
+        
+        Returns:
+            List of team dictionaries with id, name, abbreviation, etc.
+        """
+        if not self.api_key:
+            logger.warning("No API key configured for BallDontLie")
+            return []
+        
+        self._rate_limit()
+        
+        try:
+            url = f"{self.BASE_URL}/teams"
+            params = {"per_page": 100}
+            
+            response = self.session.get(url, params=params, timeout=30)
+            response.raise_for_status()
+            
+            data = response.json()
+            teams = data.get("data", [])
+            
+            logger.info(f"Fetched {len(teams)} teams")
+            return teams
+            
+        except requests.RequestException as e:
+            logger.error(f"Error fetching teams: {e}")
+            return []
+    
+    def get_player_by_id(self, player_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Get detailed information for a specific player.
+        
+        Args:
+            player_id: BallDontLie player ID
+        
+        Returns:
+            Player dictionary or None if not found
+        """
+        if not self.api_key:
+            logger.warning("No API key configured for BallDontLie")
+            return None
+        
+        self._rate_limit()
+        
+        try:
+            url = f"{self.BASE_URL}/players/{player_id}"
+            
+            response = self.session.get(url, timeout=30)
+            response.raise_for_status()
+            
+            data = response.json()
+            player = data.get("data")
+            
+            if player:
+                logger.info(f"Fetched player: {player.get('first_name')} {player.get('last_name')}")
+            
+            return player
+            
+        except requests.RequestException as e:
+            logger.error(f"Error fetching player {player_id}: {e}")
+            return None
+    
+    def get_box_score(self, game_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Get detailed box score statistics for a specific game using /v1/stats endpoint.
+        
+        Args:
+            game_id: BallDontLie game ID
+        
+        Returns:
+            Dictionary containing box score with player statistics
+        """
+        if not self.api_key:
+            logger.warning("No API key configured for BallDontLie")
+            return None
+        
+        # Use get_game_stats which already implements /v1/stats
+        player_stats = self.get_game_stats([game_id])
+        
+        if not player_stats:
+            return None
+        
+        # Organize stats into box score format
+        box_score = {
+            "game_id": game_id,
+            "player_stats": player_stats,
+            "home_players": [],
+            "away_players": []
+        }
+        
+        # Separate home and away players
+        for stat in player_stats:
+            player_data = {
+                "player": stat.get("player", {}),
+                "team": stat.get("team", {}),
+                "stats": {
+                    "min": stat.get("min", "0"),
+                    "pts": stat.get("pts", 0),
+                    "reb": stat.get("reb", 0),
+                    "ast": stat.get("ast", 0),
+                    "stl": stat.get("stl", 0),
+                    "blk": stat.get("blk", 0),
+                    "turnover": stat.get("turnover", 0),
+                    "fgm": stat.get("fgm", 0),
+                    "fga": stat.get("fga", 0),
+                    "fg_pct": stat.get("fg_pct", 0),
+                    "fg3m": stat.get("fg3m", 0),
+                    "fg3a": stat.get("fg3a", 0),
+                    "fg3_pct": stat.get("fg3_pct", 0),
+                    "ftm": stat.get("ftm", 0),
+                    "fta": stat.get("fta", 0),
+                    "ft_pct": stat.get("ft_pct", 0),
+                }
+            }
+            
+            # Note: We'll need game data to determine home/away
+            # For now, just add to player_stats list
+            box_score["player_stats"].append(player_data)
+        
+        return box_score
+    
+    def enrich_game_with_stats(self, game: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Enrich ESPN game data with comprehensive statistics from BallDontLie.
+        
+        This method maps ESPN game data to BallDontLie format and adds:
+        - Detailed player box scores
+        - Team statistics
+        - Advanced metrics
+        
+        Args:
+            game: ESPN game dictionary
+        
+        Returns:
+            Enriched game dictionary with BallDontLie statistics
+        """
+        if not self.api_key:
+            logger.debug("No API key - returning game unchanged")
+            return game
+        
+        enriched = game.copy()
+        
+        # Extract game date
+        game_date = game.get("date")
+        if not game_date:
+            logger.warning("Game has no date - cannot enrich")
+            return game
+        
+        try:
+            # Find matching BallDontLie game
+            bdl_games = self.get_games(
+                start_date=game_date,
+                end_date=game_date
+            )
+            
+            if not bdl_games:
+                logger.debug(f"No BallDontLie games found for {game_date}")
+                return game
+            
+            # Match by team names (fuzzy matching)
+            home_team = game.get("home_team", "").lower()
+            away_team = game.get("away_team", "").lower()
+            
+            matching_game = None
+            for bdl_game in bdl_games:
+                bdl_home = bdl_game.get("home_team", {}).get("full_name", "").lower()
+                bdl_away = bdl_game.get("visitor_team", {}).get("full_name", "").lower()
+                
+                # Simple substring matching
+                if (home_team in bdl_home or bdl_home in home_team) and \
+                   (away_team in bdl_away or bdl_away in away_team):
+                    matching_game = bdl_game
+                    break
+            
+            if not matching_game:
+                logger.debug(f"No matching BallDontLie game for {home_team} vs {away_team}")
+                return game
+            
+            # Get box score statistics
+            game_id = matching_game.get("id")
+            box_score = self.get_box_score(game_id)
+            
+            if box_score:
+                enriched["balldontlie_stats"] = box_score
+                enriched["balldontlie_game_id"] = game_id
+                logger.info(f"Enriched game with BallDontLie stats: {game_id}")
+            
+        except Exception as e:
+            logger.error(f"Error enriching game with BallDontLie stats: {e}")
+        
+        return enriched
