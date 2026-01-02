@@ -1,0 +1,240 @@
+nohup: ignoring input
+2026-01-01 18:37:03,029 - INFO - ✓ BallDontLie API client initialized (ALL-STAR package)
+2026-01-01 18:37:03,030 - INFO - ✓ The Odds API client initialized
+2026-01-01 18:37:03,031 - INFO - Perplexity cache database schema initialized
+2026-01-01 18:37:03,031 - INFO - PerplexityCache initialized at data/cache/perplexity.db
+2026-01-01 18:37:03,031 - INFO - MultiSourceAggregator initialized
+2026-01-01 18:37:03,031 - INFO - HistoricalDatabase initialized with data_dir=data/historical
+2026-01-01 18:37:03,031 - INFO - OddsPortalScraper initialized
+2026-01-01 18:37:03,031 - INFO - CoversOddsHistoryScraper initialized
+2026-01-01 18:37:03,031 - INFO - Historical5YearCollector initialized
+2026-01-01 18:37:03,031 - INFO - Collecting both NBA and NFL...
+2026-01-01 18:37:03,031 - INFO - 
+============================================================
+2026-01-01 18:37:03,031 - INFO - COLLECTING NBA SEASONS 2020-2024
+2026-01-01 18:37:03,031 - INFO - ============================================================
+
+2026-01-01 18:37:03,032 - INFO - 
+============================================================
+2026-01-01 18:37:03,032 - INFO - COLLECTING NBA 2020 SEASON
+2026-01-01 18:37:03,032 - INFO - ============================================================
+
+2026-01-01 18:37:03,032 - INFO - Step 1/4: Fetching games from BallDontLie...
+2026-01-01 18:37:05,334 - INFO - ✓ Fetched 3 NBA games from BallDontLie API
+2026-01-01 18:37:09,093 - INFO - ✓ Fetched 2 NBA games from BallDontLie API
+2026-01-01 18:37:10,068 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:13,088 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:14,962 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:16,083 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:16,885 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:18,295 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:19,576 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:20,862 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:37:22,390 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:37:24,326 - INFO - ✓ Fetched 61 NBA games from BallDontLie API
+2026-01-01 18:37:26,479 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:37:27,918 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:37:29,505 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:37:31,601 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+2026-01-01 18:37:33,368 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:37:35,105 - INFO - ✓ Fetched 67 NBA games from BallDontLie API
+2026-01-01 18:37:37,394 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:37:38,886 - INFO - ✓ Fetched 24 NBA games from BallDontLie API
+2026-01-01 18:37:41,770 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:37:44,572 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:37:50,065 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+g⅚53,2932026-01-01 18:37:53,293 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:37:56,626 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:37:59,194 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:38:01,115 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:38:03,102 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:38:07,157 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:38:10,186 - INFO - ✓ Fetched 23 NBA games from BallDontLie API
+2026-01-01 18:38:12,263 - INFO - ✓ Fetched 21 NBA games from BallDontLie API
+2026-01-01 18:38:14,099 - INFO - ✓ Fetched 14 NBA games from BallDontLie API
+2026-01-01 18:38:16,716 - INFO - ✓ Fetched 11 NBA games from BallDontLie API
+2026-01-01 18:38:18,711 - INFO - ✓ Fetched 8 NBA games from BallDontLie API
+2026-01-01 18:38:20,672 - INFO - ✓ Fetched 1 NBA games from BallDontLie API
+2026-01-01 18:38:20,672 - INFO - ✓ Fetched 1168 games
+2026-01-01 18:38:20,673 - INFO - Step 2/4: Fetching player statistics...
+2026-01-01 18:42:50,015 - INFO - ✓ BallDontLie API client initialized (ALL-STAR package)
+2026-01-01 18:42:50,016 - INFO - ✓ The Odds API client initialized
+2026-01-01 18:42:50,017 - INFO - Perplexity cache database schema initialized
+2026-01-01 18:42:50,017 - INFO - PerplexityCache initialized at data/cache/perplexity.db
+2026-01-01 18:42:50,018 - INFO - MultiSourceAggregator initialized
+2026-01-01 18:42:50,018 - INFO - HistoricalDatabase initialized with data_dir=data/historical
+2026-01-01 18:42:50,018 - INFO - OddsPortalScraper initialized
+2026-01-01 18:42:50,018 - INFO - CoversOddsHistoryScraper initialized
+2026-01-01 18:42:50,019 - INFO - Historical5YearCollector initialized
+2026-01-01 18:42:50,019 - INFO - Collecting both NBA and NFL...
+2026-01-01 18:42:50,019 - INFO - 
+============================================================
+2026-01-01 18:42:50,019 - INFO - COLLECTING NBA SEASONS 2020-2024
+2026-01-01 18:42:50,019 - INFO - ============================================================
+
+2026-01-01 18:42:50,019 - INFO - 
+============================================================
+2026-01-01 18:42:50,019 - INFO - COLLECTING NBA 2020 SEASON
+2026-01-01 18:42:50,019 - INFO - ============================================================
+
+2026-01-01 18:42:50,020 - INFO - Step 1/4: Fetching games from BallDontLie...
+2026-01-01 18:42:51,263 - INFO - ✓ Fetched 3 NBA games from BallDontLie API
+2026-01-01 18:42:52,023 - INFO - ✓ Fetched 2 NBA games from BallDontLie API
+2026-01-01 18:42:52,363 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:53,202 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:53,664 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:54,274 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:54,852 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:55,573 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:56,068 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:57,171 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:42:58,513 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:43:00,370 - INFO - ✓ Fetched 61 NBA games from BallDontLie API
+2026-01-01 18:43:02,408 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:43:04,836 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:43:06,250 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:43:07,813 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+2026-01-01 18:43:09,572 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:43:12,303 - INFO - ✓ Fetched 67 NBA games from BallDontLie API
+2026-01-01 18:43:13,890 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:43:15,579 - INFO - ✓ Fetched 24 NBA games from BallDontLie API
+2026-01-01 18:43:17,538 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:43:19,358 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:43:22,066 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+2026-01-01 18:43:24,171 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:43:26,305 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:43:28,470 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:43:31,364 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:43:33,102 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:43:34,684 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:43:35,561 - INFO - ✓ Fetched 23 NBA games from BallDontLie API
+2026-01-01 18:43:37,010 - INFO - ✓ Fetched 21 NBA games from BallDontLie API
+2026-01-01 18:43:37,968 - INFO - ✓ Fetched 14 NBA games from BallDontLie API
+2026-01-01 18:43:38,836 - INFO - ✓ Fetched 11 NBA games from BallDontLie API
+2026-01-01 18:43:39,800 - INFO - ✓ Fetched 8 NBA games from BallDontLie API
+2026-01-01 18:43:41,228 - INFO - ✓ Fetched 1 NBA games from BallDontLie API
+2026-01-01 18:43:41,228 - INFO - ✓ Fetched 1168 games
+2026-01-01 18:43:41,228 - INFO - Step 2/4: Fetching player statistics...
+g2026-01-01 18:47:04 - Starting historical data collection...
+2026-01-01 18:47:04 - Attempt 1 of 3
+2026-01-01 18:47:06,005 - INFO - ✓ BallDontLie API client initialized (ALL-STAR package)
+2026-01-01 18:47:06,005 - INFO - ✓ The Odds API client initialized
+2026-01-01 18:47:06,006 - INFO - Perplexity cache database schema initialized
+2026-01-01 18:47:06,006 - INFO - PerplexityCache initialized at data/cache/perplexity.db
+2026-01-01 18:47:06,006 - INFO - MultiSourceAggregator initialized
+2026-01-01 18:47:06,006 - INFO - HistoricalDatabase initialized with data_dir=data/historical
+2026-01-01 18:47:06,006 - INFO - OddsPortalScraper initialized
+2026-01-01 18:47:06,006 - INFO - CoversOddsHistoryScraper initialized
+2026-01-01 18:47:06,006 - INFO - Historical5YearCollector initialized
+2026-01-01 18:47:06,007 - INFO - Collecting both NBA and NFL...
+2026-01-01 18:47:06,007 - INFO - 
+============================================================
+2026-01-01 18:47:06,007 - INFO - COLLECTING NBA SEASONS 2020-2024
+2026-01-01 18:47:06,007 - INFO - ============================================================
+
+2026-01-01 18:47:06,007 - INFO - 
+============================================================
+2026-01-01 18:47:06,007 - INFO - COLLECTING NBA 2020 SEASON
+2026-01-01 18:47:06,007 - INFO - ============================================================
+
+2026-01-01 18:47:06,007 - INFO - Step 1/4: Fetching games from BallDontLie...
+2026-01-01 18:47:06,620 - INFO - ✓ Fetched 3 NBA games from BallDontLie API
+2026-01-01 18:47:07,769 - INFO - ✓ Fetched 2 NBA games from BallDontLie API
+2026-01-01 18:47:08,221 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:08,690 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:09,353 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:10,109 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:10,514 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:11,096 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:11,982 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:12,372 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:47:13,510 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:47:14,795 - INFO - ✓ Fetched 61 NBA games from BallDontLie API
+2026-01-01 18:47:15,697 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:47:16,749 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:47:17,496 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:47:18,420 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+2026-01-01 18:47:19,191 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:47:20,200 - INFO - ✓ Fetched 67 NBA games from BallDontLie API
+2026-01-01 18:47:21,064 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:47:22,173 - INFO - ✓ Fetched 24 NBA games from BallDontLie API
+2026-01-01 18:47:23,169 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:47:24,007 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:47:24,861 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+2026-01-01 18:47:25,503 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:47:26,563 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:47:27,400 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:47:28,350 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:47:29,221 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:47:29,886 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:47:30,924 - INFO - ✓ Fetched 23 NBA games from BallDontLie API
+2026-01-01 18:47:31,624 - INFO - ✓ Fetched 21 NBA games from BallDontLie API
+2026-01-01 18:47:32,474 - INFO - ✓ Fetched 14 NBA games from BallDontLie API
+2026-01-01 18:47:33,133 - INFO - ✓ Fetched 11 NBA games from BallDontLie API
+2026-01-01 18:47:33,629 - INFO - ✓ Fetched 8 NBA games from BallDontLie API
+2026-01-01 18:47:34,335 - INFO - ✓ Fetched 1 NBA games from BallDontLie API
+2026-01-01 18:47:34,335 - INFO - ✓ Fetched 1168 games
+2026-01-01 18:47:34,335 - INFO - Step 2/4: Fetching player statistics...
+2026-01-01 18:47:43 - ✓ Collection completed successfully!
+=== RESTARTING COLLECTION ===
+2026-01-01 18:49:52 - Starting historical data collection...
+2026-01-01 18:49:52 - Attempt 1 of 3
+2026-01-01 18:49:54,021 - INFO - ✓ BallDontLie API client initialized (ALL-STAR package)
+2026-01-01 18:49:54,021 - INFO - ✓ The Odds API client initialized
+2026-01-01 18:49:54,021 - INFO - Perplexity cache database schema initialized
+2026-01-01 18:49:54,022 - INFO - PerplexityCache initialized at data/cache/perplexity.db
+2026-01-01 18:49:54,022 - INFO - MultiSourceAggregator initialized
+2026-01-01 18:49:54,022 - INFO - HistoricalDatabase initialized with data_dir=data/historical
+2026-01-01 18:49:54,022 - INFO - OddsPortalScraper initialized
+2026-01-01 18:49:54,022 - INFO - CoversOddsHistoryScraper initialized
+2026-01-01 18:49:54,022 - INFO - Historical5YearCollector initialized
+2026-01-01 18:49:54,022 - INFO - Collecting both NBA and NFL...
+2026-01-01 18:49:54,022 - INFO - 
+============================================================
+2026-01-01 18:49:54,022 - INFO - COLLECTING NBA SEASONS 2020-2024
+2026-01-01 18:49:54,022 - INFO - ============================================================
+
+2026-01-01 18:49:54,022 - INFO - 
+============================================================
+2026-01-01 18:49:54,022 - INFO - COLLECTING NBA 2020 SEASON
+2026-01-01 18:49:54,022 - INFO - ============================================================
+
+2026-01-01 18:49:54,022 - INFO - Step 1/4: Fetching games from BallDontLie...
+2026-01-01 18:49:54,866 - INFO - ✓ Fetched 3 NBA games from BallDontLie API
+2026-01-01 18:49:55,440 - INFO - ✓ Fetched 2 NBA games from BallDontLie API
+2026-01-01 18:49:55,841 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:49:56,487 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:49:57,053 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:49:57,959 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:49:58,268 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:49:58,886 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:49:59,524 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:50:00,325 - INFO - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-01 18:50:01,375 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:50:02,465 - INFO - ✓ Fetched 61 NBA games from BallDontLie API
+2026-01-01 18:50:03,703 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:50:04,766 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:50:05,804 - INFO - ✓ Fetched 62 NBA games from BallDontLie API
+2026-01-01 18:50:06,757 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+2026-01-01 18:50:08,102 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:50:09,361 - INFO - ✓ Fetched 67 NBA games from BallDontLie API
+2026-01-01 18:50:10,411 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:50:11,312 - INFO - ✓ Fetched 24 NBA games from BallDontLie API
+2026-01-01 18:50:12,766 - INFO - ✓ Fetched 60 NBA games from BallDontLie API
+2026-01-01 18:50:14,032 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:50:15,105 - INFO - ✓ Fetched 64 NBA games from BallDontLie API
+2026-01-01 18:50:16,017 - INFO - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-01 18:50:17,438 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:50:18,408 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:50:19,261 - INFO - ✓ Fetched 63 NBA games from BallDontLie API
+2026-01-01 18:50:20,207 - INFO - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-01 18:50:21,217 - INFO - ✓ Fetched 39 NBA games from BallDontLie API
+2026-01-01 18:50:21,920 - INFO - ✓ Fetched 23 NBA games from BallDontLie API
+2026-01-01 18:50:22,710 - INFO - ✓ Fetched 21 NBA games from BallDontLie API
+2026-01-01 18:50:23,659 - INFO - ✓ Fetched 14 NBA games from BallDontLie API
+2026-01-01 18:50:24,525 - INFO - ✓ Fetched 11 NBA games from BallDontLie API
+2026-01-01 18:50:25,028 - INFO - ✓ Fetched 8 NBA games from BallDontLie API
+2026-01-01 18:50:25,914 - INFO - ✓ Fetched 1 NBA games from BallDontLie API
+2026-01-01 18:50:25,915 - INFO - ✓ Fetched 1168 games
+2026-01-01 18:50:25,915 - INFO - Step 2/4: Fetching player statistics...
+2026-01-01 18:50:35 - ✓ Collection completed successfully!

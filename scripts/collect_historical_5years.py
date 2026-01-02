@@ -85,7 +85,7 @@ class Historical5YearCollector:
         self.odds_api = TheOddsAPIClient()
         self.aggregator = MultiSourceAggregator()
         self.validator = DataValidator()
-        self.database = HistoricalDatabase()
+        self.database = HistoricalDatabase(data_dir=self.data_dir)
         
         # Initialize scrapers (fallback only)
         self.oddsportal = OddsPortalScraper()
@@ -111,7 +111,7 @@ class Historical5YearCollector:
         include_props: bool = True
     ) -> Dict[str, Any]:
         """
-        Collect all data for a single season year.
+        Collect all data for a single season year with incremental saves.
         
         Args:
             sport: Sport name (NBA or NFL)
@@ -133,41 +133,62 @@ class Historical5YearCollector:
             "validation_passed": False
         }
         
-        # Step 1: Fetch games from BallDontLie
-        logger.info("Step 1/4: Fetching games from BallDontLie...")
-        games = self._fetch_games_balldontlie(sport, year)
-        logger.info(f"✓ Fetched {len(games)} games")
-        
-        # Step 2: Fetch player stats (box scores)
-        logger.info("Step 2/4: Fetching player statistics...")
-        games = self._enrich_with_player_stats(games)
-        logger.info(f"✓ Enriched {len(games)} games with player stats")
-        
-        # Step 3: Fetch odds (primary: Odds API, fallback: scrapers)
-        logger.info("Step 3/4: Fetching betting odds...")
-        games = self._enrich_with_odds(games, sport)
-        logger.info(f"✓ Enriched {len(games)} games with odds")
-        
-        # Step 4: Enrich with Perplexity (only missing data)
-        logger.info("Step 4/4: Enriching missing data with Perplexity...")
-        games = self._enrich_with_perplexity(games)
-        logger.info(f"✓ Enriched games with Perplexity data")
-        
-        # Save games to database
-        self._save_games(games, sport, year)
-        year_stats["games_collected"] = len(games)
-        
-        # Collect player props if requested
-        if include_props:
-            logger.info("Collecting player props...")
-            props = self._fetch_player_props(games, sport)
-            self._save_props(props, sport, year)
-            year_stats["props_collected"] = len(props)
-        
-        # Validate collection
-        validation_result = self._validate_year(sport, year)
-        year_stats["validation_passed"] = validation_result["passed"]
-        year_stats["validation_details"] = validation_result
+        try:
+            # Step 1: Fetch games from BallDontLie
+            logger.info("Step 1/4: Fetching games from BallDontLie...")
+            games = self._fetch_games_balldontlie(sport, year)
+            logger.info(f"✓ Fetched {len(games)} games")
+            
+            # Save after step 1 (incremental)
+            self._save_games(games, sport, year)
+            logger.info("✓ Incremental save: games fetched")
+            
+            # Step 2: Fetch player stats (box scores)
+            logger.info("Step 2/4: Fetching player statistics...")
+            games = self._enrich_with_player_stats(games)
+            logger.info(f"✓ Enriched {len(games)} games with player stats")
+            
+            # Save after step 2 (incremental)
+            self._save_games(games, sport, year)
+            logger.info("✓ Incremental save: player stats added")
+            
+            # Step 3: Fetch odds (primary: Odds API, fallback: scrapers)
+            logger.info("Step 3/4: Fetching betting odds...")
+            games = self._enrich_with_odds(games, sport)
+            logger.info(f"✓ Enriched {len(games)} games with odds")
+            
+            # Save after step 3 (incremental)
+            self._save_games(games, sport, year)
+            logger.info("✓ Incremental save: odds added")
+            
+            # Step 4: Enrich with Perplexity (only missing data)
+            logger.info("Step 4/4: Enriching missing data with Perplexity...")
+            games = self._enrich_with_perplexity(games)
+            logger.info(f"✓ Enriched games with Perplexity data")
+            
+            # Final save
+            self._save_games(games, sport, year)
+            year_stats["games_collected"] = len(games)
+            logger.info("✓ Final save: all game data complete")
+            
+            # Collect player props if requested
+            if include_props:
+                logger.info("Collecting player props...")
+                props = self._fetch_player_props(games, sport)
+                self._save_props(props, sport, year)
+                year_stats["props_collected"] = len(props)
+                logger.info("✓ Player props saved")
+            
+            # Validate collection
+            validation_result = self._validate_year(sport, year)
+            year_stats["validation_passed"] = validation_result["passed"]
+            year_stats["validation_details"] = validation_result
+            
+        except Exception as e:
+            logger.error(f"Error collecting {sport} {year}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            year_stats["error"] = str(e)
         
         return year_stats
     
@@ -216,17 +237,26 @@ class Historical5YearCollector:
         """Enrich games with player statistics from BallDontLie /v1/stats."""
         enriched_games = []
         
-        for game in games:
-            game_id = game.get("id")
-            
-            if game_id:
-                box_score = self.balldontlie.get_box_score(game_id)
+        for idx, game in enumerate(games):
+            try:
+                game_id = game.get("id")
                 
-                if box_score:
-                    game["player_stats"] = box_score.get("player_stats", [])
-                    self.stats["api_requests"] += 1
-            
-            enriched_games.append(game)
+                if game_id:
+                    box_score = self.balldontlie.get_box_score(game_id)
+                    
+                    if box_score:
+                        game["player_stats"] = box_score.get("player_stats", [])
+                        self.stats["api_requests"] += 1
+                
+                enriched_games.append(game)
+                
+                # Log progress every 50 games
+                if (idx + 1) % 50 == 0:
+                    logger.info(f"Player stats progress: {idx + 1}/{len(games)} games")
+                    
+            except Exception as e:
+                logger.error(f"Error enriching game {game.get('id')}: {e}")
+                enriched_games.append(game)  # Add without stats
         
         return enriched_games
     
@@ -382,18 +412,34 @@ class Historical5YearCollector:
         sport: str,
         year: int
     ):
-        """Save games to JSON database."""
+        """Save games to JSON database with backup."""
         output_file = self.data_dir / f"{sport.lower()}_{year}_games.json"
+        backup_file = self.data_dir / f"{sport.lower()}_{year}_games.backup.json"
         
         try:
+            # Create backup if file exists
+            if output_file.exists():
+                import shutil
+                shutil.copy2(output_file, backup_file)
+            
+            # Save new data
             with open(output_file, 'w') as f:
                 json.dump(games, f, indent=2)
             
             logger.info(f"✓ Saved {len(games)} games to {output_file}")
             self.stats["total_games"] += len(games)
+            
+            # Remove backup after successful save
+            if backup_file.exists():
+                backup_file.unlink()
         
         except Exception as e:
             logger.error(f"Failed to save games: {e}")
+            # Restore from backup if save failed
+            if backup_file.exists():
+                import shutil
+                shutil.copy2(backup_file, output_file)
+                logger.info("Restored from backup")
     
     def _save_props(
         self,
