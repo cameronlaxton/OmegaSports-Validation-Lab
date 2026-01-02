@@ -97,6 +97,50 @@ python scripts/load_and_validate_games.py --verbose
 
 ---
 
+### ✅ test_data_collection.py (NEW - VALIDATION)
+
+**Comprehensive validation test suite for data collection.**
+
+Tests that historical data collection endpoints return correct data, format matches schema, and data is properly stored.
+
+**Features:**
+- Database schema validation
+- Data validation logic testing
+- API endpoint verification
+- Data integrity checks
+- End-to-end pipeline testing
+
+**Usage Examples:**
+```bash
+# Run all validation tests
+python scripts/test_data_collection.py
+
+# Test specific sport
+python scripts/test_data_collection.py --sport NBA
+
+# Verbose output
+python scripts/test_data_collection.py --verbose
+```
+
+**What it validates:**
+1. ✅ Database schema exists and is correct
+2. ✅ Data validation logic works properly
+3. ✅ Data in database meets schema requirements
+4. ✅ API endpoints return data in correct format
+5. ✅ Data collection pipeline is configured
+
+**Output:**
+- Pass/fail results for each test
+- Detailed error messages for failures
+- Summary statistics
+- Recommendations for fixes
+
+**Related:**
+- See [DATA_SCHEMA.md](../DATA_SCHEMA.md) for complete schema documentation
+- See [DATABASE_STORAGE_GUIDE.md](../DATABASE_STORAGE_GUIDE.md) for storage details
+
+---
+
 ### ✅ test_api_integration.py
 
 **Test API connections and validate configuration.**

@@ -221,7 +221,19 @@ python examples/example_02_player_props.py
 python examples/example_03_backtesting.py
 ```
 
-### 4. Check What You Have
+### 4. Validate Data Collection (NEW)
+```bash
+# Test that data collection is properly configured
+python scripts/test_data_collection.py
+
+# This validates:
+# - Database schema is correct
+# - Data validation logic works
+# - Endpoints return data in correct format
+# - Data meets schema requirements
+```
+
+### 5. Check What You Have
 ```bash
 # Quick status check
 python scripts/check_status.py
@@ -234,7 +246,7 @@ GROUP BY sport;
 "
 ```
 
-### 5. Run Experiments
+### 6. Run Experiments
 ```bash
 # Run Module 1: Edge Threshold Calibration
 python run_all_modules.py --module 01
@@ -353,6 +365,7 @@ data/collection*.log        # Collection logs
 |-------|----------|---------|
 | **Getting started** | [GETTING_STARTED.md](GETTING_STARTED.md) | First-time setup |
 | **Database storage** | [DATABASE_STORAGE_GUIDE.md](DATABASE_STORAGE_GUIDE.md) | How data is stored |
+| **Data schema** | [DATA_SCHEMA.md](DATA_SCHEMA.md) | ⭐ Schema definitions and validation |
 | **Data collection** | [DATA_COLLECTION_GUIDE.md](DATA_COLLECTION_GUIDE.md) | How to collect data |
 | **Running experiments** | [EXPERIMENTS.md](EXPERIMENTS.md) | Experiment protocols |
 | **Architecture** | [ARCHITECTURE.md](ARCHITECTURE.md) | System design |
