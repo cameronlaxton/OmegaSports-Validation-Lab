@@ -277,10 +277,14 @@ class DataCollectionValidator:
         stats = cursor.fetchone()
         total, missing_scores, missing_dates, missing_teams = stats
         
-        completeness = (total - missing_scores - missing_dates - missing_teams) / total * 100
-        
-        self.log_test("Data completeness check", missing_dates == 0 and missing_teams == 0,
-                     f"Completeness: {completeness:.1f}% (some scores may be null for future games)")
+        if total > 0:
+            completeness = (total - missing_scores - missing_dates - missing_teams) / total * 100
+            
+            self.log_test("Data completeness check", missing_dates == 0 and missing_teams == 0,
+                         f"Completeness: {completeness:.1f}% (some scores may be null for future games)")
+        else:
+            self.log_test("Data completeness check", False,
+                         "No data in database to check")
         
         return validation_passed
     
@@ -294,13 +298,14 @@ class DataCollectionValidator:
         try:
             bdl_client = BallDontLieAPIClient()
             if bdl_client.api_key:
-                # Fetch recent games
-                test_date = datetime.now().strftime("%Y-%m-%d")
+                # Use a known historical date for consistent testing
+                # March 15, 2024 had many NBA games
+                test_date = "2024-03-15"
                 games = bdl_client.get_games(test_date, test_date)
                 
                 if games:
                     self.log_test("BallDontLie API returns data", True,
-                                 f"Returned {len(games)} games")
+                                 f"Returned {len(games)} games for {test_date}")
                     
                     # Validate structure
                     sample = games[0]
@@ -311,7 +316,7 @@ class DataCollectionValidator:
                                  "Contains required fields")
                 else:
                     self.log_test("BallDontLie API returns data", False,
-                                 "No data returned (may be off-season)")
+                                 f"No data returned for {test_date}")
             else:
                 self.log_test("BallDontLie API configured", False,
                              "API key not set. Set BALLDONTLIE_API_KEY in .env")
