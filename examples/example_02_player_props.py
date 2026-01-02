@@ -47,6 +47,25 @@ def main():
     total_props = cursor.fetchone()[0]
     print(f"Total player props in database: {total_props:,}")
 
+    if total_props == 0:
+        print()
+        print("=" * 80)
+        print("NOTE: No player props data found in database.")
+        print("=" * 80)
+        print()
+        print("To collect player props data, run:")
+        print("  python scripts/collect_historical_sqlite.py \\")
+        print("      --sports NBA --start-year 2023 --end-year 2024")
+        print()
+        print("This example requires player props data to demonstrate:")
+        print("  - Player prop analysis")
+        print("  - Hit rate calculations")
+        print("  - Performance trends")
+        print()
+        print("For now, this example will exit. Run data collection first.")
+        print("=" * 80)
+        return
+
     # Count by prop type
     cursor.execute("""
         SELECT prop_type, COUNT(*) as count 
@@ -65,7 +84,7 @@ def main():
     
     cursor.execute("""
         SELECT date, player_team, opponent_team, prop_type, 
-               line, actual_value
+               over_line, actual_value
         FROM player_props
         WHERE player_name = ?
         ORDER BY date DESC
@@ -77,9 +96,10 @@ def main():
     print("-" * 80)
     for row in cursor.fetchall():
         actual = f"{row['actual_value']}" if row['actual_value'] is not None else "N/A"
+        line = f"{row['over_line']:.1f}" if row['over_line'] is not None else "N/A"
         print(
             f"{row['date']:<12} {row['player_team']:<10} {row['opponent_team']:<10} "
-            f"{row['prop_type']:<15} {row['line']:<8.1f} {actual:<8}"
+            f"{row['prop_type']:<15} {line:<8} {actual:<8}"
         )
     print()
 
@@ -89,10 +109,10 @@ def main():
     cursor.execute("""
         SELECT prop_type, 
                COUNT(*) as total,
-               SUM(CASE WHEN actual_value > line THEN 1 ELSE 0 END) as overs,
-               SUM(CASE WHEN actual_value < line THEN 1 ELSE 0 END) as unders,
+               SUM(CASE WHEN actual_value > over_line THEN 1 ELSE 0 END) as overs,
+               SUM(CASE WHEN actual_value < over_line THEN 1 ELSE 0 END) as unders,
                AVG(actual_value) as avg_actual,
-               AVG(line) as avg_line
+               AVG(over_line) as avg_line
         FROM player_props
         WHERE player_name = ?
           AND actual_value IS NOT NULL
@@ -146,8 +166,8 @@ def main():
     cursor.execute("""
         SELECT prop_type,
                COUNT(*) as total_props,
-               AVG(ABS(actual_value - line)) as avg_error,
-               AVG((actual_value - line)) as avg_bias
+               AVG(ABS(actual_value - over_line)) as avg_error,
+               AVG((actual_value - over_line)) as avg_bias
         FROM player_props
         WHERE actual_value IS NOT NULL
         GROUP BY prop_type
