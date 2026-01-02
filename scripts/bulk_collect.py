@@ -1,6 +1,24 @@
 #!/usr/bin/env python3
 """
-Bulk collection tool for multiple seasons of NBA/NFL data.
+⚠️ DEPRECATED - DO NOT USE
+
+This script is deprecated and will be removed in a future version.
+
+Use instead:
+    python scripts/collect_historical_sqlite.py --sports NBA NFL --start-year 2020 --end-year 2024
+
+Reason for deprecation:
+    - Superseded by collect_historical_sqlite.py which provides:
+      * SQLite database storage (more reliable)
+      * Better error handling and resume capability
+      * Multi-threading support
+      * Comprehensive data validation
+    
+See: START_HERE.md for current script recommendations
+
+---
+
+LEGACY: Bulk collection tool for multiple seasons of NBA/NFL data.
 """
 
 import sys

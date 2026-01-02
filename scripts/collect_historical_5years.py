@@ -1,6 +1,25 @@
 #!/usr/bin/env python3
 """
-5-Year Historical Sports Data Collection Script
+⚠️ DEPRECATED - DO NOT USE
+
+This script is deprecated and will be removed in a future version.
+
+Use instead:
+    python scripts/collect_historical_sqlite.py --sports NBA NFL --start-year 2020 --end-year 2024
+
+Reason for deprecation:
+    - Superseded by collect_historical_sqlite.py which provides:
+      * Unified SQLite storage instead of fragmented JSON files
+      * Better multi-threading implementation
+      * Improved error handling and resume capability
+      * Cleaner code organization
+      * Better progress tracking
+    
+See: START_HERE.md for current script recommendations
+
+---
+
+LEGACY: 5-Year Historical Sports Data Collection Script
 
 Comprehensive data collection orchestrator for NBA and NFL (2020-2024).
 Integrates all enhanced components:

@@ -2,120 +2,289 @@
 
 This directory contains utility scripts for the OmegaSports Validation Lab.
 
-## Available Scripts
+## 🎯 Recommended Scripts (Use These)
 
-### load_and_validate_games.py
+### ✅ collect_historical_sqlite.py (PRIMARY COLLECTION SCRIPT)
 
-Loads and validates historical game data (2020-2024) for sports betting analysis.
+**Modern SQLite-based historical data collection.**
+
+Loads and validates historical game data (2020-2024) for sports betting analysis with SQLite storage.
 
 **Features:**
-- Fetches comprehensive game data with statistics (beyond just schedules)
+- SQLite database storage (robust, concurrent-safe)
+- Multi-threaded data collection
+- Resume capability (won't lose progress)
+- Comprehensive error handling
+- Progress tracking and logging
 - Supports multiple sports: NBA, NFL, NCAAB, NCAAF
-- Includes detailed player statistics and team metrics
+- Includes player statistics and team metrics
 - Retry logic for failed requests
-- Data validation and caching
-- Progress reporting
 
 **Usage Examples:**
 ```bash
-# Load all sports with default settings (2020-2024, min 1000 games, multi-source enabled)
-python scripts/load_and_validate_games.py
+# Collect NBA and NFL data (recommended starting point)
+python scripts/collect_historical_sqlite.py \
+    --sports NBA NFL \
+    --start-year 2022 \
+    --end-year 2024 \
+    --workers 2
 
-# Load specific sports (multi-source enabled by default)
-python scripts/load_and_validate_games.py --sports NBA NFL
-
-# Custom year range (multi-source enabled by default)
-python scripts/load_and_validate_games.py --start-year 2022 --end-year 2024
-
-# Custom minimum count (multi-source enabled by default)
-python scripts/load_and_validate_games.py --min-count 500
-
-# Verbose output
-python scripts/load_and_validate_games.py --verbose
-
-# Disable multi-source (not recommended - ESPN only)
-python scripts/load_and_validate_games.py --disable-multi-source
-
-# All options combined
-python scripts/load_and_validate_games.py \
+# Collect all 4 sports with 5-year history
+python scripts/collect_historical_sqlite.py \
+    --sports NBA NFL NCAAB NCAAF \
     --start-year 2020 \
     --end-year 2024 \
-    --sports NBA NFL NCAAB NCAAF \
-    --min-count 1000 \
-    --max-retries 3 \
-    --verbose
+    --workers 4
+
+# Resume interrupted collection
+python scripts/collect_historical_sqlite.py \
+    --sports NBA \
+    --start-year 2023 \
+    --end-year 2024 \
+    --resume
+
+# Check status of collection
+python scripts/collect_historical_sqlite.py --status
 ```
 
 **Output:**
-- Saves game data to `data/historical/{sport}_{year}_games.json`
-- Logs activity to `data/logs/load_games.log`
-- Caches API responses in `data/cache/`
-- Reports summary statistics and validation results
+- Saves to `data/sports_data.db` (SQLite database)
+- Logs to `data/logs/collection_sqlite.log`
+- Progress tracking in console
 
-**Data Sources:**
-The script fetches data from multiple sources to ensure comprehensive coverage:
-- **ESPN API**: Game results, scores, basic statistics
-- **Additional statistics**: Team performance metrics, player statistics
-- **Betting lines**: Moneyline, spread, totals (when available)
+---
 
-This goes beyond ESPN's scheduler API to include:
-- Historical game results (not just upcoming schedules)
-- Complete player statistics
-- Team statistics and advanced metrics
-- Betting lines and odds history
+### ✅ check_status.py
 
-**Example Output:**
+**Check database status and data completeness.**
 
-```
-================================================================================
-                  Loading and Validating Historical Games
-================================================================================
-
-Start Year: 2020
-End Year: 2024
-Sports: NBA, NFL, NCAAB, NCAAF
-Minimum Count: 1000
-
-Initializing components...
-✓ Components initialized
-
-Processing NBA...
--------------------------------
-NBA: 5190 games loaded (took 45.23s)
-✓ NBA has sufficient data: 5190 >= 1000
-
-Processing NFL...
--------------------------------
-NFL: 1280 games loaded (took 23.12s)
-✓ NFL has sufficient data: 1280 >= 1000
-
-================================================================================
-                                   Summary
-================================================================================
-
-✓ NBA: 5190 games
-✓ NFL: 1280 games
-✓ NCAAB: 3450 games
-✓ NCAAF: 1320 games
-
-✓ All sports ready for Module 1
+**Usage:**
+```bash
+python scripts/check_status.py
 ```
 
-## Directory Structure
+**Shows:**
+- Number of games collected per sport/season
+- Data completeness statistics
+- Missing data gaps
+- Database size and health
 
+---
+
+### ✅ load_and_validate_games.py (LEGACY JSON SUPPORT)
+
+**Legacy JSON-based data loading for backward compatibility.**
+
+Use this if you need JSON file output instead of SQLite database.
+
+**Usage Examples:**
+```bash
+# Load specific sports to JSON
+python scripts/load_and_validate_games.py --sports NBA NFL
+
+# Custom year range
+python scripts/load_and_validate_games.py \
+    --start-year 2022 \
+    --end-year 2024
+
+# Verbose output
+python scripts/load_and_validate_games.py --verbose
 ```
-scripts/
-├── __init__.py
-├── README.md
-└── load_and_validate_games.py
+
+**Output:**
+- Saves to `data/historical/{sport}_{year}_games.json`
+- Logs to `data/logs/load_games.log`
+
+---
+
+### ✅ test_api_integration.py
+
+**Test API connections and validate configuration.**
+
+**Usage:**
+```bash
+python scripts/test_api_integration.py
 ```
 
-## Adding New Scripts
+**Tests:**
+- API key validity
+- Network connectivity
+- Data source availability
+- Rate limiting compliance
 
-When adding new scripts to this directory:
+---
 
-1. Follow Python naming conventions (snake_case)
-2. Include a docstring at the top explaining purpose and usage
-3. Make scripts executable: `chmod +x script_name.py`
-4. Add logging to `data/logs/`
-5. Update this README with usage information
+## ⚠️ Deprecated Scripts (Do Not Use)
+
+These scripts are deprecated and will be removed. They've been superseded by more robust implementations.
+
+### ❌ bulk_collect.py
+**Replaced by:** `collect_historical_sqlite.py`  
+**Reason:** Better error handling, SQLite storage, multi-threading
+
+### ❌ collect_games_only.py
+**Replaced by:** `collect_historical_sqlite.py`  
+**Reason:** More comprehensive data collection, better validation
+
+### ❌ collect_historical_5years.py
+**Replaced by:** `collect_historical_sqlite.py`  
+**Reason:** Cleaner code, unified storage, better progress tracking
+
+### ❌ collect_historical_odds.py
+**Replaced by:** `collect_historical_sqlite.py` (integrated)  
+**Reason:** Odds collection now integrated into main script
+
+---
+
+## 🧪 Experimental Scripts (Use With Caution)
+
+### ⚠️ enrich_odds.py
+**Status:** Experimental  
+**Purpose:** Backfill odds for games missing betting lines  
+**Note:** May not work reliably, use main collection script instead
+
+### ⚠️ enrich_player_stats.py
+**Status:** Experimental  
+**Purpose:** Backfill player statistics  
+**Note:** May not work reliably, use main collection script instead
+
+---
+
+## 📋 Migration Guide
+
+### From Old Scripts to New
+
+**Old approach:**
+```bash
+# DON'T DO THIS ANYMORE
+python scripts/collect_historical_5years.py --sport NBA
+python scripts/collect_historical_odds.py --sport NBA
+python scripts/enrich_player_stats.py --sport NBA
+```
+
+**New approach:**
+```bash
+# DO THIS INSTEAD - Single unified script
+python scripts/collect_historical_sqlite.py \
+    --sports NBA NFL \
+    --start-year 2020 \
+    --end-year 2024 \
+    --workers 2
+```
+
+**Benefits:**
+- ✅ One script does everything
+- ✅ Better error handling
+- ✅ Resume capability
+- ✅ Multi-threading support
+- ✅ SQLite database (not fragmented JSON files)
+- ✅ Better progress tracking
+
+---
+
+## 🗂️ Data Storage
+
+### SQLite Database (Recommended)
+```bash
+data/sports_data.db          # Main database (36 MB)
+├── games                    # Game results and statistics
+├── player_props             # Player prop bets
+├── odds_history             # Historical betting lines
+├── player_props_odds        # Player prop odds
+└── perplexity_cache         # API cache
+```
+
+### JSON Files (Legacy)
+```bash
+data/historical/
+├── nba_2020_games.json     # Legacy JSON format
+├── nba_2021_games.json
+└── ...
+```
+
+---
+
+## 🔧 Common Tasks
+
+### Task 1: Initial Data Collection
+```bash
+# Start fresh with recommended sports and timeframe
+python scripts/collect_historical_sqlite.py \
+    --sports NBA NFL \
+    --start-year 2022 \
+    --end-year 2024 \
+    --workers 2
+```
+
+### Task 2: Check What You Have
+```bash
+# Quick status check
+python scripts/check_status.py
+
+# Or query database directly
+sqlite3 data/sports_data.db "
+SELECT sport, COUNT(*) as game_count 
+FROM games 
+GROUP BY sport;
+"
+```
+
+### Task 3: Resume Interrupted Collection
+```bash
+# Resume where you left off
+python scripts/collect_historical_sqlite.py \
+    --sports NBA \
+    --resume
+```
+
+### Task 4: Backfill Specific Year
+```bash
+# Collect just 2023 data
+python scripts/collect_historical_sqlite.py \
+    --sports NBA NFL \
+    --start-year 2023 \
+    --end-year 2023
+```
+
+---
+
+## 🆘 Troubleshooting
+
+### "Script hangs or times out"
+**Solution:** Use multi-threading with `--workers 2` or `--workers 4`
+
+### "Database is locked"
+**Solution:** Only run one collection script at a time, or check for stale `.pid` files
+
+### "API rate limit exceeded"
+**Solution:** Collection script has built-in rate limiting, just wait and resume
+
+### "Missing data for specific games"
+**Solution:** Use `check_status.py` to identify gaps, then re-run collection for that year
+
+---
+
+## 📚 Related Documentation
+
+- **[START_HERE.md](../START_HERE.md)** - Repository navigation guide
+- **[DATABASE_STORAGE_GUIDE.md](../DATABASE_STORAGE_GUIDE.md)** - Database architecture
+- **[DATA_COLLECTION_GUIDE.md](../DATA_COLLECTION_GUIDE.md)** - Data collection details
+- **[SQLITE_MIGRATION_COMPLETE.md](../SQLITE_MIGRATION_COMPLETE.md)** - Migration details
+
+---
+
+## 🔄 Quick Reference
+
+| Task | Command |
+|------|---------|
+| **Collect data** | `python scripts/collect_historical_sqlite.py --sports NBA NFL` |
+| **Check status** | `python scripts/check_status.py` |
+| **Test APIs** | `python scripts/test_api_integration.py` |
+| **Resume collection** | `python scripts/collect_historical_sqlite.py --resume` |
+| **Query database** | `sqlite3 data/sports_data.db "SELECT * FROM games LIMIT 10;"` |
+
+---
+
+**Last Updated:** January 2, 2026  
+**Recommended Script:** `collect_historical_sqlite.py`  
+**Database:** SQLite at `data/sports_data.db`

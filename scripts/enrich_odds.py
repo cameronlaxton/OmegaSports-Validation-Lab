@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
 """
-Enrich games with historical betting odds.
+⚠️ EXPERIMENTAL - USE WITH CAUTION
+
+This script is experimental and may not work as expected.
+
+Consider using:
+    python scripts/collect_historical_sqlite.py --sports NBA NFL
+
+Note:
+    - This was an experimental enrichment approach
+    - Odds collection is now better integrated into the main collection script
+    - Keep for reference or experimental purposes only
+    
+See: START_HERE.md for recommended scripts
+
+---
+
+EXPERIMENTAL: Enrich games with historical betting odds.
 Processes games where has_odds = 0.
 """
 
