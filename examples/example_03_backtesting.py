@@ -27,7 +27,9 @@ from core.db_manager import DatabaseManager
 
 
 # Betting constants
-STANDARD_ODDS_PAYOUT = 0.909  # Typical -110 odds: risk $1.10 to win $1.00 (1/1.10 = 0.909)
+# At -110 odds (standard sportsbook line), you risk $110 to win $100
+# Payout ratio = 100/110 = 0.909 units profit per 1 unit risked
+STANDARD_ODDS_PAYOUT = 0.909
 UNIT_SIZE = 1.0  # Standard betting unit
 
 
