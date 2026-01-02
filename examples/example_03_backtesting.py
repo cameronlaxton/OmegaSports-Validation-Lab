@@ -26,6 +26,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.db_manager import DatabaseManager
 
 
+# Betting constants
+STANDARD_ODDS_PAYOUT = 0.909  # Typical -110 odds: risk $1.10 to win $1.00 (1/1.10 = 0.909)
+UNIT_SIZE = 1.0  # Standard betting unit
+
+
 def calculate_bet_result(actual_margin, spread_line):
     """
     Calculate if a spread bet won.
@@ -89,7 +94,6 @@ def main():
     losses = 0
     pushes = 0
     total_units = 0.0
-    unit_size = 1.0  # Standard 1 unit per bet
     
     for game in games:
         actual_margin = game['home_score'] - game['away_score']
@@ -100,11 +104,11 @@ def main():
         
         if result == 'WIN':
             wins += 1
-            # Typical odds are -110, so 1 unit bet returns 0.909 units profit
-            total_units += 0.909 * unit_size
+            # At -110 odds, winning $1 unit bet returns profit
+            total_units += STANDARD_ODDS_PAYOUT * UNIT_SIZE
         elif result == 'LOSS':
             losses += 1
-            total_units -= 1.0 * unit_size
+            total_units -= UNIT_SIZE
         else:  # PUSH
             pushes += 1
             # No change in units
@@ -142,10 +146,10 @@ def main():
         
         if result == 'WIN':
             wins += 1
-            total_units += 0.909 * unit_size
+            total_units += STANDARD_ODDS_PAYOUT * UNIT_SIZE
         elif result == 'LOSS':
             losses += 1
-            total_units -= 1.0 * unit_size
+            total_units -= UNIT_SIZE
         else:
             pushes += 1
     
@@ -184,10 +188,10 @@ def main():
         
         if result == 'WIN':
             wins += 1
-            total_units += 0.909 * unit_size
+            total_units += STANDARD_ODDS_PAYOUT * UNIT_SIZE
         elif result == 'LOSS':
             losses += 1
-            total_units -= 1.0 * unit_size
+            total_units -= UNIT_SIZE
         else:
             pushes += 1
     
