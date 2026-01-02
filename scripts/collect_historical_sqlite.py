@@ -63,15 +63,15 @@ class SQLiteHistoricalCollector:
         "NFL": 285    # ~285 games per season
     }
     
-    # Season date ranges
+    # Season date ranges (adjusted to actual season start dates)
     SEASON_DATES = {
         "NBA": {
-            2020: ("2019-10-01", "2020-08-31"),
-            2021: ("2020-12-01", "2021-07-31"),
-            2022: ("2021-10-01", "2022-06-30"),
-            2023: ("2022-10-01", "2023-06-30"),
-            2024: ("2023-10-01", "2024-06-30"),
-            2025: ("2024-10-01", "2025-06-30")
+            2020: ("2019-10-22", "2020-10-11"),  # 2019-20 season (COVID extended)
+            2021: ("2020-12-22", "2021-07-20"),  # 2020-21 season (COVID shortened)
+            2022: ("2021-10-19", "2022-06-16"),  # 2021-22 season
+            2023: ("2022-10-18", "2023-06-12"),  # 2022-23 season
+            2024: ("2023-10-24", "2024-06-17"),  # 2023-24 season
+            2025: ("2024-10-22", "2025-06-30")   # 2024-25 season (projected)
         },
         "NFL": {
             2020: ("2020-09-01", "2021-02-28"),
@@ -157,8 +157,10 @@ class SQLiteHistoricalCollector:
         logger.info("="*60)
         
         # Step 1: Fetch games from BallDontLie
-        logger.info(f"\n[Step 1/4] Fetching games from BallDontLie...")
-        games = self._fetch_games_balldontlie(sport, start_date, end_date, year)
+        # BallDontLie uses the *starting* year (e.g., 2019 for 2019-20 season)
+        season_param = year - 1
+        logger.info(f"\n[Step 1/4] Fetching games from BallDontLie (season={season_param})...")
+        games = self._fetch_games_balldontlie(sport, start_date, end_date, season_param)
         
         if not games:
             logger.error("No games fetched - aborting")
@@ -166,15 +168,41 @@ class SQLiteHistoricalCollector:
         
         logger.info(f"✓ Fetched {len(games)} games")
         
-        # Step 2: Filter for resume
+        # Step 2: Filter for resume (skip duplicate game fetching only)
         if resume:
             existing_ids = set(self.db_manager.get_game_ids(sport, start_date, end_date))
-            games = [g for g in games if g['game_id'] not in existing_ids]
-            logger.info(f"✓ Resume mode: {len(games)} new games to process")
+            new_games = [g for g in games if g['game_id'] not in existing_ids]
+            logger.info(f"✓ Resume mode: {len(new_games)} new games, {len(existing_ids)} existing")
+            games = new_games
         
         if not games:
-            logger.info("✓ All games already collected")
-            return True
+            logger.info("✓ No new games to fetch - skipping to enrichment")
+            # Load existing games that need enrichment
+            conn = self.db_manager.get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                'SELECT game_id, date, home_team, away_team, home_score, away_score, season FROM games WHERE sport = ? AND date BETWEEN ? AND ? AND has_player_stats = 0',
+                (sport, start_date, end_date)
+            )
+            rows = cursor.fetchall()
+            
+            if not rows:
+                logger.info("✓ All games already enriched")
+                return True
+            
+            # Convert to game dictionaries for enrichment
+            games = []
+            for row in rows:
+                games.append({
+                    'game_id': row[0],
+                    'date': row[1],
+                    'home_team': row[2],
+                    'away_team': row[3],
+                    'home_score': row[4],
+                    'away_score': row[5],
+                    'season': row[6]
+                })
+            logger.info(f"✓ Loaded {len(games)} games needing enrichment")
         
         # Step 3: Enrich with player stats (uses threading if workers > 1)
         logger.info(f"\n[Step 2/4] Enriching with player statistics...")

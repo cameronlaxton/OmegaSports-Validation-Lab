@@ -1,0 +1,63 @@
+2026-01-02 06:02:00,020 - [INFO] - ✓ BallDontLie API client initialized (ALL-STAR package)
+2026-01-02 06:02:00,020 - [INFO] - ✓ The Odds API client initialized
+2026-01-02 06:02:00,020 - [INFO] - Perplexity cache database schema initialized
+2026-01-02 06:02:00,020 - [INFO] - PerplexityCache initialized at data/cache/perplexity.db
+2026-01-02 06:02:00,021 - [INFO] - MultiSourceAggregator initialized
+2026-01-02 06:02:00,021 - [INFO] - OddsPortalScraper initialized
+2026-01-02 06:02:00,021 - [INFO] - CoversOddsHistoryScraper initialized
+2026-01-02 06:02:00,021 - [INFO] - ✓ SQLite collector initialized (workers=1)
+2026-01-02 06:02:00,021 - [INFO] - ============================================================
+2026-01-02 06:02:00,021 - [INFO] - COLLECTING NBA 2020 SEASON
+2026-01-02 06:02:00,021 - [INFO] - Date Range: 2019-10-22 to 2020-10-11
+2026-01-02 06:02:00,021 - [INFO] - Expected Games: ~1230
+2026-01-02 06:02:00,021 - [INFO] - ============================================================
+2026-01-02 06:02:00,021 - [INFO] - 
+[Step 1/4] Fetching games from BallDontLie (season=2019)...
+2026-01-02 06:02:01,308 - [INFO] - ✓ Fetched 54 NBA games from BallDontLie API
+2026-01-02 06:02:01,319 - [INFO] -   2019-10-22: +54 games (total: 54)
+2026-01-02 06:02:02,645 - [INFO] - ✓ Fetched 57 NBA games from BallDontLie API
+2026-01-02 06:02:02,708 - [INFO] -   2019-10-30: +57 games (total: 111)
+2026-01-02 06:02:03,665 - [INFO] - ✓ Fetched 55 NBA games from BallDontLie API
+2026-01-02 06:02:03,728 - [INFO] -   2019-11-07: +55 games (total: 166)
+2026-01-02 06:02:04,852 - [INFO] - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-02 06:02:04,863 - [INFO] -   2019-11-15: +58 games (total: 224)
+2026-01-02 06:02:05,742 - [INFO] - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-02 06:02:05,800 - [INFO] -   2019-11-23: +59 games (total: 283)
+2026-01-02 06:02:07,275 - [INFO] - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-02 06:02:07,332 - [INFO] -   2019-12-01: +59 games (total: 342)
+2026-01-02 06:02:08,539 - [INFO] - ✓ Fetched 58 NBA games from BallDontLie API
+2026-01-02 06:02:08,550 - [INFO] -   2019-12-09: +58 games (total: 400)
+2026-01-02 06:02:09,774 - [INFO] - ✓ Fetched 54 NBA games from BallDontLie API
+2026-01-02 06:02:09,835 - [INFO] -   2019-12-17: +54 games (total: 454)
+2026-01-02 06:02:10,653 - [INFO] - ✓ Fetched 53 NBA games from BallDontLie API
+2026-01-02 06:02:10,664 - [INFO] -   2019-12-25: +53 games (total: 507)
+2026-01-02 06:02:11,631 - [INFO] - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-02 06:02:11,688 - [INFO] -   2020-01-02: +59 games (total: 566)
+2026-01-02 06:02:12,648 - [INFO] - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-02 06:02:12,703 - [INFO] -   2020-01-10: +59 games (total: 625)
+2026-01-02 06:02:13,455 - [INFO] - ✓ Fetched 59 NBA games from BallDontLie API
+2026-01-02 06:02:13,468 - [INFO] -   2020-01-18: +59 games (total: 684)
+2026-01-02 06:02:15,078 - [INFO] - ✓ Fetched 55 NBA games from BallDontLie API
+2026-01-02 06:02:15,133 - [INFO] -   2020-01-26: +55 games (total: 739)
+2026-01-02 06:02:16,089 - [INFO] - ✓ Fetched 61 NBA games from BallDontLie API
+2026-01-02 06:02:16,149 - [INFO] -   2020-02-03: +61 games (total: 800)
+2026-01-02 06:02:17,469 - [INFO] - ✓ Fetched 18 NBA games from BallDontLie API
+2026-01-02 06:02:17,473 - [INFO] -   2020-02-11: +18 games (total: 818)
+2026-01-02 06:02:18,355 - [INFO] - ✓ Fetched 53 NBA games from BallDontLie API
+2026-01-02 06:02:18,413 - [INFO] -   2020-02-19: +53 games (total: 871)
+2026-01-02 06:02:19,786 - [INFO] - ✓ Fetched 57 NBA games from BallDontLie API
+2026-01-02 06:02:19,798 - [INFO] -   2020-02-27: +57 games (total: 928)
+2026-01-02 06:02:21,031 - [INFO] - ✓ Fetched 43 NBA games from BallDontLie API
+2026-01-02 06:02:21,086 - [INFO] -   2020-03-06: +43 games (total: 971)
+2026-01-02 06:02:21,565 - [INFO] - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-02 06:02:21,565 - [INFO] -   2020-03-14: +0 games (total: 971)
+2026-01-02 06:02:22,465 - [INFO] - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-02 06:02:22,465 - [INFO] -   2020-03-22: +0 games (total: 971)
+2026-01-02 06:02:23,945 - [INFO] - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-02 06:02:23,946 - [INFO] -   2020-03-30: +0 games (total: 971)
+2026-01-02 06:02:24,750 - [INFO] - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-02 06:02:24,750 - [INFO] -   2020-04-07: +0 games (total: 971)
+2026-01-02 06:02:25,379 - [INFO] - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-02 06:02:25,379 - [INFO] -   2020-04-15: +0 games (total: 971)
+2026-01-02 06:02:26,398 - [INFO] - ✓ Fetched 0 NBA games from BallDontLie API
+2026-01-02 06:02:26,398 - [INFO] -   2020-04-23: +0 games (total: 971)
