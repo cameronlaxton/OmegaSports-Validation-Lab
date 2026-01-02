@@ -124,7 +124,17 @@ sqlite3 data/sports_data.db "SELECT COUNT(*) FROM games;"
 - ~14,000 games stored with statistics and betting lines
 - Thread-safe, concurrent access with WAL mode
 
-**See full details:** [DATABASE_STORAGE_GUIDE.md](DATABASE_STORAGE_GUIDE.md)
+**Working Examples:**
+```bash
+# See practical database usage examples
+python examples/example_01_basic_queries.py    # Database basics
+python examples/example_02_player_props.py     # Player statistics
+python examples/example_03_backtesting.py      # Simple backtesting
+```
+
+**See full details:** 
+- [DATABASE_STORAGE_GUIDE.md](DATABASE_STORAGE_GUIDE.md) - Complete guide
+- [examples/README.md](examples/README.md) - Working code examples
 
 ### Q3: "Too many scripts - which one should I use?"
 
@@ -203,7 +213,15 @@ python scripts/collect_historical_sqlite.py \
     --workers 2
 ```
 
-### 3. Check What You Have
+### 3. Run Database Examples
+```bash
+# Learn how to use the database
+python examples/example_01_basic_queries.py   # Start here
+python examples/example_02_player_props.py
+python examples/example_03_backtesting.py
+```
+
+### 4. Check What You Have
 ```bash
 # Quick status check
 python scripts/check_status.py
@@ -216,7 +234,7 @@ GROUP BY sport;
 "
 ```
 
-### 4. Run Experiments
+### 5. Run Experiments
 ```bash
 # Run Module 1: Edge Threshold Calibration
 python run_all_modules.py --module 01
@@ -248,6 +266,11 @@ OmegaSports-Validation-Lab/
 ├── 📁 modules/                      ← Experiments
 │   ├── 01_edge_threshold/           ← Module 1
 │   └── 02_iteration_optimization/   ← Module 2
+│
+├── 📁 examples/                     ← Working code examples ⭐ NEW
+│   ├── example_01_basic_queries.py  ← Database basics
+│   ├── example_02_player_props.py   ← Player statistics
+│   └── example_03_backtesting.py    ← Simple backtesting
 │
 ├── 📁 data/                         ← Data storage
 │   ├── sports_data.db               ← SQLite database (36 MB)
@@ -346,8 +369,9 @@ data/collection*.log        # Collection logs
 1. **Read this document** ✓ (You're doing it!)
 2. **Install dependencies** → [INSTALLATION.md](INSTALLATION.md)
 3. **Collect sample data** → Use `collect_historical_sqlite.py`
-4. **Run first experiment** → Use `run_all_modules.py --module 01`
-5. **Review results** → Check `data/experiments/`
+4. **Try database examples** → Run examples in `examples/` directory
+5. **Run first experiment** → Use `run_all_modules.py --module 01`
+6. **Review results** → Check `data/experiments/`
 
 ---
 
