@@ -208,23 +208,38 @@ class DatabaseManager:
         """)
         
         # ============================================================
-        # ODDS_HISTORY TABLE - Historical betting lines from scrapers
+        # ODDS_HISTORY TABLE - Historical Market Expectations Archive
         # ============================================================
+        # CRITICAL: This is NOT just "odds cache" - it's the calibration baseline
+        # 
+        # Three layers of historical data:
+        # 1. The Target (line): Market's expectation at time T (e.g., "Lakers -3.5")
+        # 2. The Price (odds): Implied probability/confidence (e.g., "-110" = 52.4%)
+        # 3. The Context (timestamp): When this expectation existed
+        #
+        # Calibration Formula:
+        #   Result (from games table) vs Prediction (from this table)
+        #   Example: Lakers won by 7 > line of -3.5 = Cover
+        #
+        # Line movement over time reveals late-breaking information (injuries, 
+        # lineup changes, sharp money) - crucial for understanding market accuracy
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS odds_history (
                 game_id TEXT NOT NULL,
                 bookmaker TEXT NOT NULL,
                 market_type TEXT NOT NULL,  -- 'moneyline', 'spread', 'total'
                 
-                -- Market-specific fields
-                line REAL,              -- spread line or total line
-                home_odds INTEGER,      -- American odds
-                away_odds INTEGER,
-                over_odds INTEGER,
-                under_odds INTEGER,
+                -- CALIBRATION TARGET: What the market expected
+                line REAL,              -- The expectation (spread/total line)
                 
-                -- Metadata
-                timestamp INTEGER,
+                -- CALIBRATION PRICE: Market's confidence level
+                home_odds INTEGER,      -- American odds for home/favorite
+                away_odds INTEGER,      -- American odds for away/underdog
+                over_odds INTEGER,      -- American odds for over
+                under_odds INTEGER,     -- American odds for under
+                
+                -- CALIBRATION CONTEXT: When expectation existed
+                timestamp INTEGER,      -- Unix timestamp of snapshot
                 source TEXT,            -- 'oddsapi', 'oddsportal', 'covers'
                 
                 PRIMARY KEY (game_id, bookmaker, market_type, timestamp)
@@ -247,19 +262,33 @@ class DatabaseManager:
         """)
         
         # ============================================================
-        # PLAYER_PROPS_ODDS TABLE - Historical odds for player props
+        # PLAYER_PROPS_ODDS TABLE - Historical Player Prop Market Expectations
         # ============================================================
+        # CRITICAL: Core calibration data for player performance betting
+        #
+        # Calibration Formula:
+        #   Actual Value (from player_stats in games table) vs Line (from this table)
+        #   Example: LeBron scored 28 points > line of 24.5 = Over hit
+        #
+        # The line represents the market's collective expectation at time T.
+        # Line movement (24.5 → 25.5) reveals late information flow.
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS player_props_odds (
                 game_id TEXT NOT NULL,
                 bookmaker TEXT NOT NULL,
                 player_name TEXT NOT NULL,
-                prop_type TEXT NOT NULL,
-                line REAL NOT NULL,
-                over_odds INTEGER,
-                under_odds INTEGER,
-                timestamp INTEGER,
-                source TEXT,
+                prop_type TEXT NOT NULL,  -- 'points', 'rebounds', 'assists', etc.
+                
+                -- CALIBRATION TARGET: Market's expectation for player performance
+                line REAL NOT NULL,       -- The expectation (e.g., 24.5 points)
+                
+                -- CALIBRATION PRICE: Market's confidence level
+                over_odds INTEGER,        -- American odds for Over
+                under_odds INTEGER,       -- American odds for Under
+                
+                -- CALIBRATION CONTEXT
+                timestamp INTEGER,        -- When this expectation existed
+                source TEXT,              -- Data source
                 
                 PRIMARY KEY (game_id, bookmaker, player_name, prop_type, line)
             )
@@ -737,6 +766,158 @@ class DatabaseManager:
         conn.commit()
         
         return deleted
+    
+    # ============================================================
+    # CALIBRATION QUERY HELPERS
+    # ============================================================
+    
+    def get_calibration_data(
+        self,
+        sport: str,
+        start_date: str,
+        end_date: str,
+        market_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get calibration data for market accuracy analysis.
+        
+        Joins games (actual results) with odds_history (market expectations)
+        to enable calibration analysis.
+        
+        Args:
+            sport: Sport type
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            market_type: Filter by market ('spread', 'total', 'moneyline')
+            
+        Returns:
+            List of dicts with {result, expectation, accuracy}
+            
+        Example:
+            >>> calibration = db.get_calibration_data('NBA', '2024-01-01', '2024-12-31', 'spread')
+            >>> for record in calibration:
+            >>>     actual_margin = record['home_score'] - record['away_score']
+            >>>     expected_line = record['line']
+            >>>     covered = actual_margin > expected_line
+        """
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        query = """
+            SELECT 
+                g.game_id,
+                g.date,
+                g.home_team,
+                g.away_team,
+                g.home_score,
+                g.away_score,
+                o.bookmaker,
+                o.market_type,
+                o.line AS market_expectation,
+                o.home_odds,
+                o.away_odds,
+                o.over_odds,
+                o.under_odds,
+                o.timestamp AS market_snapshot_time
+            FROM games g
+            JOIN odds_history o ON g.game_id = o.game_id
+            WHERE g.sport = ? 
+                AND g.date >= ? 
+                AND g.date <= ?
+                AND g.home_score IS NOT NULL
+                AND g.away_score IS NOT NULL
+        """
+        
+        params = [sport, start_date, end_date]
+        
+        if market_type:
+            query += " AND o.market_type = ?"
+            params.append(market_type)
+        
+        query += " ORDER BY g.date, g.game_id, o.timestamp"
+        
+        cursor.execute(query, params)
+        
+        return [dict(row) for row in cursor.fetchall()]
+    
+    def get_player_prop_calibration_data(
+        self,
+        sport: str,
+        start_date: str,
+        end_date: str,
+        prop_type: Optional[str] = None,
+        player_name: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get player prop calibration data.
+        
+        Joins player_stats (actual performance) with player_props_odds 
+        (market expectations) for accuracy analysis.
+        
+        Args:
+            sport: Sport type
+            start_date: Start date
+            end_date: End date
+            prop_type: Filter by prop type ('points', 'rebounds', etc.)
+            player_name: Filter by player
+            
+        Returns:
+            List of dicts with {actual_value, market_line, result}
+            
+        Example:
+            >>> props = db.get_player_prop_calibration_data('NBA', '2024-01-01', '2024-12-31', 'points')
+            >>> for prop in props:
+            >>>     actual = prop['actual_value']
+            >>>     line = prop['market_expectation']
+            >>>     result = 'OVER' if actual > line else 'UNDER' if actual < line else 'PUSH'
+        """
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        query = """
+            SELECT 
+                pp.prop_id,
+                pp.game_id,
+                pp.date,
+                pp.player_name,
+                pp.prop_type,
+                pp.actual_value,
+                ppo.bookmaker,
+                ppo.line AS market_expectation,
+                ppo.over_odds,
+                ppo.under_odds,
+                ppo.timestamp AS market_snapshot_time,
+                CASE 
+                    WHEN pp.actual_value > ppo.line THEN 'OVER'
+                    WHEN pp.actual_value < ppo.line THEN 'UNDER'
+                    ELSE 'PUSH'
+                END AS result
+            FROM player_props pp
+            JOIN player_props_odds ppo 
+                ON pp.game_id = ppo.game_id 
+                AND pp.player_name = ppo.player_name 
+                AND pp.prop_type = ppo.prop_type
+            WHERE pp.sport = ?
+                AND pp.date >= ?
+                AND pp.date <= ?
+                AND pp.actual_value IS NOT NULL
+        """
+        
+        params = [sport, start_date, end_date]
+        
+        if prop_type:
+            query += " AND pp.prop_type = ?"
+            params.append(prop_type)
+        
+        if player_name:
+            query += " AND pp.player_name = ?"
+            params.append(player_name)
+        
+        query += " ORDER BY pp.date, pp.player_name"
+        
+        cursor.execute(query, params)
+        
+        return [dict(row) for row in cursor.fetchall()]
     
     # ============================================================
     # UTILITY METHODS

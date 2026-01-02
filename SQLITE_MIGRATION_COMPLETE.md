@@ -65,10 +65,47 @@ Successfully migrated the OmegaSports betting calibration system from a fragile 
 | Table | Rows Expected | Primary Key | Purpose |
 |-------|--------------|-------------|---------|
 | `games` | ~14,000 | game_id | Core game results + betting lines |
-| `player_props` | ~100,000 | prop_id | Individual player prop bets |
-| `odds_history` | ~500,000 | (game_id, bookmaker, market_type, timestamp) | Historical odds snapshots |
-| `player_props_odds` | ~1,000,000 | (game_id, bookmaker, player_name, prop_type, line) | Player prop odds |
+| `player_props` | ~100,000 | prop_id | Individual player prop bets with actual results |
+| `odds_history` | ~500,000 | (game_id, bookmaker, market_type, timestamp) | **Historical Market Expectations Archive** - captures what market believed at time T |
+| `player_props_odds` | ~1,000,000 | (game_id, bookmaker, player_name, prop_type, line) | **Historical Player Prop Expectations** - market's prediction for player performance |
 | `perplexity_cache` | ~10,000 | query_hash | LLM enrichment cache (30-day TTL) |
+
+### Critical Semantic Understanding: Historical Market Expectations
+
+The `odds_history` and `player_props_odds` tables are **NOT just "odds cache"** - they are the **calibration baseline** for your entire betting system.
+
+**Three Layers of Historical Data:**
+
+1. **The Target (line)**: Market's expectation at time T
+   - Example: "LeBron James Over/Under 24.5 Points"
+   - This is a **historical fact** about market belief
+
+2. **The Price (odds)**: Implied probability/confidence
+   - Example: "-115 Over" = 53.5% implied probability
+   - Represents market's **confidence level** in the expectation
+
+3. **The Context (timestamp)**: When this expectation existed
+   - Line moving from 24.5 → 25.5 an hour before game
+   - Reveals **late-breaking information** (injuries, sharp money)
+
+**Calibration Formula:**
+```python
+# Result (from games table) vs Prediction (from odds_history)
+actual_margin = home_score - away_score  # Example: Lakers won by 7
+market_expectation = line                 # Example: Lakers -3.5
+result = 'COVER' if actual_margin > market_expectation else 'NO COVER'
+
+# For player props
+actual_value = player_stats['points']     # Example: LeBron scored 28
+market_expectation = line                 # Example: 24.5 points
+result = 'OVER' if actual_value > market_expectation else 'UNDER'
+```
+
+**Why This Matters:**
+- You're not building an odds scraper - you're building a **calibration engine**
+- The `line` field is **critical data**, not just metadata
+- Together with actual results, this enables market accuracy analysis
+- Line movement over time reveals information flow patterns
 
 **Indexes:**
 ```sql
@@ -377,6 +414,37 @@ db.insert_prop({
 
 # Get stats
 stats = db.get_stats()  # {'games': 1168, 'player_props': 0, ...}
+
+# CALIBRATION QUERIES - New!
+# Get spread calibration data
+calibration = db.get_calibration_data(
+    sport='NBA',
+    start_date='2024-01-01',
+    end_date='2024-12-31',
+    market_type='spread'
+)
+
+for record in calibration:
+    actual_margin = record['home_score'] - record['away_score']
+    expected_line = record['market_expectation']  # The "line" column
+    covered = actual_margin > expected_line
+    print(f"{record['date']}: {record['home_team']} vs {record['away_team']}")
+    print(f"  Market Expected: {expected_line}")
+    print(f"  Actual Margin: {actual_margin}")
+    print(f"  Result: {'COVER' if covered else 'NO COVER'}")
+
+# Get player prop calibration data
+props = db.get_player_prop_calibration_data(
+    sport='NBA',
+    start_date='2024-01-01',
+    end_date='2024-12-31',
+    prop_type='points'
+)
+
+for prop in props:
+    print(f"{prop['player_name']}: {prop['actual_value']} points (line was {prop['market_expectation']})")
+    print(f"  Result: {prop['result']}")  # OVER, UNDER, or PUSH
+    print(f"  Market Confidence: {prop['over_odds']}/{prop['under_odds']}")
 ```
 
 ### Pandas Helpers
