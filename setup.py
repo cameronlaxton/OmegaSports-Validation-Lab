@@ -28,6 +28,8 @@ setup(
         "seaborn>=0.12.0",
         "requests>=2.30.0",
         "python-dotenv>=1.0.0",
+        "beautifulsoup4>=4.12.0",
+        "lxml>=4.9.0",
         "pytest>=7.4.0",
         "jupyter>=1.0.0",
     ],

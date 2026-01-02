@@ -1,6 +1,23 @@
 #!/usr/bin/env python3
 """
-Historical Odds Data Collection Script
+⚠️ DEPRECATED - DO NOT USE
+
+This script is deprecated and will be removed in a future version.
+
+Use instead:
+    python scripts/collect_historical_sqlite.py --sports NBA NFL --start-year 2020 --end-year 2024
+
+Reason for deprecation:
+    - Odds collection is now integrated into collect_historical_sqlite.py
+    - Better integration with the unified database
+    - Improved error handling and caching
+    - No need for separate odds collection step
+    
+See: START_HERE.md for current script recommendations
+
+---
+
+LEGACY: Historical Odds Data Collection Script
 
 This script fetches and caches ALL historical betting odds for NBA/NFL games
 from 2020-2024. Run this ONCE during your paid month to gather all data,

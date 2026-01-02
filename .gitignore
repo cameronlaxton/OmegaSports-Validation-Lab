@@ -49,6 +49,19 @@ data/experiments/*.json
 data/logs/*.log
 data/cache/
 
+# Temporary files (should not be committed)
+data/*.pid
+data/*.log
+data/collection*.log
+data/enrich*.log
+data/simple_collection.log
+data/test_collection.log
+
+# Database (optional - uncomment if you don't want to track the DB)
+# data/sports_data.db
+# data/sports_data.db-shm
+# data/sports_data.db-wal
+
 # Reports
 reports/*.html
 reports/*.pdf

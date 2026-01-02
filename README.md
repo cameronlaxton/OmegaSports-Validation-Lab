@@ -4,6 +4,15 @@
 
 A comprehensive research and testing platform for validating, optimizing, and improving the OmegaSports quantitative sports betting engine. This lab implements rigorous experimental methodology to calibrate model parameters, evaluate betting strategies, and ensure consistent long-term profitability.
 
+## 🎯 New Here? [START HERE →](START_HERE.md)
+
+**First time in this repository?** Read **[START_HERE.md](START_HERE.md)** for:
+- Clear explanation of what this repo does
+- How it relates to the OmegaSports Engine
+- Navigation guide for 30+ documentation files
+- Quick answers to common questions
+- Recommended scripts to use (and which to ignore)
+
 ## 🎯 Mission
 
 Transform the OmegaSports production engine into a scientific research platform through:
