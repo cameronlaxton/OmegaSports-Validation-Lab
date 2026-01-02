@@ -51,8 +51,10 @@ class BallDontLieAPIClient:
                 'User-Agent': 'OmegaSports-Validation-Lab/1.0'
             })
         
-        self.rate_limit_delay = 0.6  # ALL-STAR package allows more requests
+        # ALL-STAR tier: 60 requests/minute = 1.0 second between requests
+        self.rate_limit_delay = 1.0
         self.last_request_time = 0
+        self.request_timeout = 30  # 30 second timeout for cloud reliability
     
     def _rate_limit(self):
         """Enforce rate limiting."""
