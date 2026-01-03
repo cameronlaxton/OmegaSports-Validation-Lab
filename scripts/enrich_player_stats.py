@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
 """
-Enrich games with player statistics from BallDontLie API.
+⚠️ EXPERIMENTAL - USE WITH CAUTION
+
+This script is experimental and may not work as expected.
+
+Consider using:
+    python scripts/collect_historical_sqlite.py --sports NBA NFL
+
+Note:
+    - This was an experimental enrichment approach
+    - Player stats collection is now better integrated into the main collection script
+    - Keep for reference or experimental purposes only
+    
+See: START_HERE.md for recommended scripts
+
+---
+
+EXPERIMENTAL: Enrich games with player statistics from BallDontLie API.
 Processes games where has_player_stats = 0.
 """
 

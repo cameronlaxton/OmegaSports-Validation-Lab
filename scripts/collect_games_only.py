@@ -1,6 +1,25 @@
 #!/usr/bin/env python3
 """
-Simple script to collect games only (no enrichment).
+⚠️ DEPRECATED - DO NOT USE
+
+This script is deprecated and will be removed in a future version.
+
+Use instead:
+    python scripts/collect_historical_sqlite.py --sports NBA NFL --start-year 2020 --end-year 2024
+
+Reason for deprecation:
+    - Superseded by collect_historical_sqlite.py which provides:
+      * Better data validation
+      * Comprehensive error handling
+      * Multi-threading support
+      * Resume capability
+      * Unified collection pipeline
+    
+See: START_HERE.md for current script recommendations
+
+---
+
+LEGACY: Simple script to collect games only (no enrichment).
 Supports both NBA and NFL data collection.
 """
 
