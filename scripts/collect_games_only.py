@@ -21,6 +21,7 @@ SEASON_DATES = {
         2022: (datetime(2021, 10, 19), datetime(2022, 6, 16), 2021),
         2023: (datetime(2022, 10, 18), datetime(2023, 6, 12), 2022),
         2024: (datetime(2023, 10, 24), datetime(2024, 6, 17), 2023),
+        2025: (datetime(2024, 10, 22), datetime(2025, 6, 30), 2024),  # Current season (projected end)
     },
     "NFL": {
         2020: (datetime(2019, 9, 5), datetime(2020, 2, 2), 2019),
@@ -28,6 +29,7 @@ SEASON_DATES = {
         2022: (datetime(2021, 9, 9), datetime(2022, 2, 13), 2021),
         2023: (datetime(2022, 9, 8), datetime(2023, 2, 12), 2022),
         2024: (datetime(2023, 9, 7), datetime(2024, 2, 11), 2023),
+        2025: (datetime(2024, 9, 5), datetime(2025, 2, 9), 2024),  # Current season (projected end)
     }
 }
 

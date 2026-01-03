@@ -56,8 +56,12 @@ def enrich_player_stats(sport='NBA', season=None, limit=None):
         game_id, date, home_team, away_team, game_season = game
         
         try:
-            # Extract BallDontLie game ID from our game_id format (e.g., "nba_12345")
-            bdl_game_id = int(game_id.split('_')[1])
+            # Extract BallDontLie game ID from our game_id format
+            # Handles both "nba_12345" and "12345" formats
+            if '_' in str(game_id):
+                bdl_game_id = int(game_id.split('_')[1])
+            else:
+                bdl_game_id = int(game_id)
             
             # Fetch player stats for this game
             stats = client.get_game_stats([bdl_game_id])

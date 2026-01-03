@@ -1,0 +1,171 @@
+nohup: ignoring input
+2026-01-03 01:14:01,422 - ✓ BallDontLie API client initialized (ALL-STAR package)
+2026-01-03 01:14:01,436 - 🔄 Enriching 4276 NBA games with player statistics...
+2026-01-03 01:14:02,236 -   No stats returned for game 401584708
+2026-01-03 01:14:03,326 -   No stats returned for game 401584709
+2026-01-03 01:14:04,349 -   No stats returned for game 401584710
+2026-01-03 01:14:21,155 -   Progress: 10/4276 games enriched
+2026-01-03 01:14:33,124 -   Progress: 20/4276 games enriched
+2026-01-03 01:14:48,056 -   Progress: 30/4276 games enriched
+2026-01-03 01:14:56,884 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110953&per_page=100
+2026-01-03 01:14:56,884 -   No stats returned for game 110953
+2026-01-03 01:14:57,883 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110954&per_page=100
+2026-01-03 01:14:57,883 -   No stats returned for game 110954
+2026-01-03 01:14:58,887 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110955&per_page=100
+2026-01-03 01:14:58,887 -   No stats returned for game 110955
+2026-01-03 01:14:59,899 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110956&per_page=100
+2026-01-03 01:14:59,899 -   No stats returned for game 110956
+2026-01-03 01:15:01,125 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110957&per_page=100
+2026-01-03 01:15:01,125 -   No stats returned for game 110957
+2026-01-03 01:15:01,937 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110958&per_page=100
+2026-01-03 01:15:01,937 -   No stats returned for game 110958
+2026-01-03 01:15:02,933 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110959&per_page=100
+2026-01-03 01:15:02,933 -   No stats returned for game 110959
+2026-01-03 01:15:04,299 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110960&per_page=100
+2026-01-03 01:15:04,299 -   No stats returned for game 110960
+2026-01-03 01:15:04,969 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110961&per_page=100
+2026-01-03 01:15:04,969 -   No stats returned for game 110961
+2026-01-03 01:15:06,263 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110962&per_page=100
+2026-01-03 01:15:06,264 -   No stats returned for game 110962
+2026-01-03 01:15:07,052 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110963&per_page=100
+2026-01-03 01:15:07,053 -   No stats returned for game 110963
+2026-01-03 01:15:08,022 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110964&per_page=100
+2026-01-03 01:15:08,022 -   No stats returned for game 110964
+2026-01-03 01:15:08,889 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110965&per_page=100
+2026-01-03 01:15:08,889 -   No stats returned for game 110965
+2026-01-03 01:15:10,043 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110966&per_page=100
+2026-01-03 01:15:10,043 -   No stats returned for game 110966
+2026-01-03 01:15:10,976 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110967&per_page=100
+2026-01-03 01:15:10,976 -   No stats returned for game 110967
+2026-01-03 01:15:11,941 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110968&per_page=100
+2026-01-03 01:15:11,941 -   No stats returned for game 110968
+2026-01-03 01:15:13,055 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110969&per_page=100
+2026-01-03 01:15:13,055 -   No stats returned for game 110969
+2026-01-03 01:15:14,097 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110970&per_page=100
+2026-01-03 01:15:14,097 -   No stats returned for game 110970
+2026-01-03 01:15:15,037 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110971&per_page=100
+2026-01-03 01:15:15,037 -   No stats returned for game 110971
+2026-01-03 01:15:16,103 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110972&per_page=100
+2026-01-03 01:15:16,103 -   No stats returned for game 110972
+2026-01-03 01:15:16,928 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110973&per_page=100
+2026-01-03 01:15:16,928 -   No stats returned for game 110973
+2026-01-03 01:15:18,173 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=110974&per_page=100
+2026-01-03 01:15:18,173 -   No stats returned for game 110974
+2026-01-03 01:15:24,553 -   Progress: 40/4276 games enriched
+2026-01-03 01:15:39,049 -   Progress: 50/4276 games enriched
+2026-01-03 01:15:49,956 -   Progress: 60/4276 games enriched
+2026-01-03 01:16:01,621 -   Progress: 70/4276 games enriched
+2026-01-03 01:16:11,154 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117693&per_page=100
+2026-01-03 01:16:11,154 -   No stats returned for game 117693
+2026-01-03 01:16:12,070 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117694&per_page=100
+2026-01-03 01:16:12,070 -   No stats returned for game 117694
+2026-01-03 01:16:13,240 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117695&per_page=100
+2026-01-03 01:16:13,241 -   No stats returned for game 117695
+2026-01-03 01:16:14,079 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117696&per_page=100
+2026-01-03 01:16:14,080 -   No stats returned for game 117696
+2026-01-03 01:16:15,171 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117697&per_page=100
+2026-01-03 01:16:15,171 -   No stats returned for game 117697
+2026-01-03 01:16:16,075 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117698&per_page=100
+2026-01-03 01:16:16,075 -   No stats returned for game 117698
+2026-01-03 01:16:17,174 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117699&per_page=100
+2026-01-03 01:16:17,175 -   No stats returned for game 117699
+2026-01-03 01:16:18,029 - Error fetching player stats: 429 Client Error: Too Many Requests for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=117700&per_page=100
+2026-01-03 01:16:18,029 -   No stats returned for game 117700
+2026-01-03 01:16:22,160 -   Progress: 80/4276 games enriched
+2026-01-03 01:16:32,922 -   Progress: 90/4276 games enriched
+2026-01-03 01:16:45,244 -   Progress: 100/4276 games enriched
+2026-01-03 01:16:55,745 -   Progress: 110/4276 games enriched
+2026-01-03 01:17:07,842 -   Progress: 120/4276 games enriched
+2026-01-03 01:17:20,448 -   Progress: 130/4276 games enriched
+2026-01-03 01:17:32,184 -   Progress: 140/4276 games enriched
+2026-01-03 01:17:46,287 -   Progress: 150/4276 games enriched
+2026-01-03 01:18:06,457 -   Progress: 160/4276 games enriched
+2026-01-03 01:18:31,531 -   Progress: 170/4276 games enriched
+2026-01-03 01:18:54,024 -   Progress: 180/4276 games enriched
+2026-01-03 01:19:29,008 -   Progress: 190/4276 games enriched
+2026-01-03 01:19:50,889 -   Progress: 200/4276 games enriched
+2026-01-03 01:20:12,804 -   Progress: 210/4276 games enriched
+2026-01-03 01:20:52,702 -   Progress: 220/4276 games enriched
+2026-01-03 01:21:29,121 -   Progress: 230/4276 games enriched
+2026-01-03 01:22:02,827 -   Progress: 240/4276 games enriched
+2026-01-03 01:22:38,117 -   Progress: 250/4276 games enriched
+2026-01-03 01:23:20,212 -   Progress: 260/4276 games enriched
+2026-01-03 01:24:15,428 -   Progress: 270/4276 games enriched
+2026-01-03 01:25:50,189 - Error fetching player stats: 502 Server Error: Bad Gateway for url: https://api.balldontlie.io/v1/stats?game_ids%5B%5D=62718&per_page=100
+2026-01-03 01:25:50,190 -   No stats returned for game 62718
+2026-01-03 01:26:20,197 - Error fetching player stats: HTTPSConnectionPool(host='api.balldontlie.io', port=443): Read timed out. (read timeout=30)
+2026-01-03 01:26:20,198 -   No stats returned for game 62719
+2026-01-03 01:27:08,307 -   Progress: 280/4276 games enriched
+2026-01-03 01:27:40,333 -   Progress: 290/4276 games enriched
+2026-01-03 01:28:10,817 -   Progress: 300/4276 games enriched
+2026-01-03 01:28:42,963 -   Progress: 310/4276 games enriched
+2026-01-03 01:29:10,128 -   Progress: 320/4276 games enriched
+2026-01-03 01:29:39,207 -   Progress: 330/4276 games enriched
+2026-01-03 01:30:00,760 -   Progress: 340/4276 games enriched
+2026-01-03 01:30:27,835 -   Progress: 350/4276 games enriched
+2026-01-03 01:30:57,015 -   Progress: 360/4276 games enriched
+2026-01-03 01:31:26,713 -   Progress: 370/4276 games enriched
+2026-01-03 01:31:50,132 -   Progress: 380/4276 games enriched
+2026-01-03 01:32:18,305 -   Progress: 390/4276 games enriched
+2026-01-03 01:32:44,524 -   Progress: 400/4276 games enriched
+2026-01-03 01:33:07,231 -   Progress: 410/4276 games enriched
+2026-01-03 01:33:26,148 -   Progress: 420/4276 games enriched
+2026-01-03 01:33:42,723 -   Progress: 430/4276 games enriched
+2026-01-03 01:34:01,601 -   Progress: 440/4276 games enriched
+2026-01-03 01:34:19,330 -   Progress: 450/4276 games enriched
+2026-01-03 01:34:41,335 -   Progress: 460/4276 games enriched
+2026-01-03 01:34:57,831 -   Progress: 470/4276 games enriched
+2026-01-03 01:35:14,532 -   Progress: 480/4276 games enriched
+2026-01-03 01:35:33,448 -   Progress: 490/4276 games enriched
+2026-01-03 01:35:53,533 -   Progress: 500/4276 games enriched
+2026-01-03 01:36:11,212 -   Progress: 510/4276 games enriched
+2026-01-03 01:36:27,724 -   Progress: 520/4276 games enriched
+2026-01-03 01:36:41,744 -   Progress: 530/4276 games enriched
+2026-01-03 01:36:59,724 -   Progress: 540/4276 games enriched
+2026-01-03 01:37:19,607 -   Progress: 550/4276 games enriched
+2026-01-03 01:37:39,911 -   Progress: 560/4276 games enriched
+2026-01-03 01:37:57,198 -   Progress: 570/4276 games enriched
+2026-01-03 01:38:23,187 -   Progress: 580/4276 games enriched
+2026-01-03 01:38:44,512 -   Progress: 590/4276 games enriched
+2026-01-03 01:39:05,994 -   Progress: 600/4276 games enriched
+2026-01-03 01:39:31,190 -   Progress: 610/4276 games enriched
+2026-01-03 01:39:50,795 -   Progress: 620/4276 games enriched
+2026-01-03 01:40:21,555 -   Progress: 630/4276 games enriched
+2026-01-03 01:40:50,205 -   Progress: 640/4276 games enriched
+2026-01-03 01:41:16,996 -   Progress: 650/4276 games enriched
+2026-01-03 01:41:46,841 -   Progress: 660/4276 games enriched
+2026-01-03 01:42:08,510 -   Progress: 670/4276 games enriched
+2026-01-03 01:42:35,522 -   Progress: 680/4276 games enriched
+2026-01-03 01:43:01,406 -   Progress: 690/4276 games enriched
+2026-01-03 01:43:34,624 -   Progress: 700/4276 games enriched
+2026-01-03 01:43:58,690 -   Progress: 710/4276 games enriched
+2026-01-03 01:44:20,893 -   Progress: 720/4276 games enriched
+2026-01-03 01:44:48,207 -   Progress: 730/4276 games enriched
+2026-01-03 01:45:17,187 -   Progress: 740/4276 games enriched
+2026-01-03 01:45:42,183 -   Progress: 750/4276 games enriched
+2026-01-03 01:46:01,500 -   Progress: 760/4276 games enriched
+2026-01-03 01:46:24,393 -   Progress: 770/4276 games enriched
+2026-01-03 01:46:40,231 -   Progress: 780/4276 games enriched
+2026-01-03 01:46:57,399 -   Progress: 790/4276 games enriched
+2026-01-03 01:47:17,724 -   Progress: 800/4276 games enriched
+2026-01-03 01:47:36,023 -   Progress: 810/4276 games enriched
+2026-01-03 01:47:55,987 -   Progress: 820/4276 games enriched
+2026-01-03 01:48:20,696 -   Progress: 830/4276 games enriched
+2026-01-03 01:48:45,587 -   Progress: 840/4276 games enriched
+2026-01-03 01:49:08,909 -   Progress: 850/4276 games enriched
+2026-01-03 01:49:34,986 -   Progress: 860/4276 games enriched
+2026-01-03 01:49:55,316 -   Progress: 870/4276 games enriched
+2026-01-03 01:50:25,865 -   Progress: 880/4276 games enriched
+2026-01-03 01:50:53,632 -   Progress: 890/4276 games enriched
+2026-01-03 01:51:18,684 -   Progress: 900/4276 games enriched
+2026-01-03 01:51:44,595 -   Progress: 910/4276 games enriched
+2026-01-03 01:52:10,383 -   Progress: 920/4276 games enriched
+2026-01-03 01:52:30,440 -   Progress: 930/4276 games enriched
+2026-01-03 01:52:54,591 -   Progress: 940/4276 games enriched
+2026-01-03 01:53:24,985 -   Progress: 950/4276 games enriched
+2026-01-03 01:53:47,300 -   Progress: 960/4276 games enriched
+2026-01-03 01:54:06,304 -   Progress: 970/4276 games enriched
+2026-01-03 01:54:27,806 -   Progress: 980/4276 games enriched
+2026-01-03 01:54:49,494 -   Progress: 990/4276 games enriched
+2026-01-03 01:55:07,837 -   Progress: 1000/4276 games enriched
+2026-01-03 01:55:30,488 -   Progress: 1010/4276 games enriched

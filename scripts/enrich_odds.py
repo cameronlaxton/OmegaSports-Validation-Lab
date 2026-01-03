@@ -2,6 +2,7 @@
 """
 Enrich games with historical betting odds.
 Processes games where has_odds = 0.
+Uses The Odds API to fetch historical betting lines.
 """
 
 import sys
@@ -10,10 +11,16 @@ import logging
 from datetime import datetime, timedelta
 from core.db_manager import DatabaseManager
 from omega.odds_api_client import TheOddsAPIClient
-from core.multi_source_aggregator import MultiSourceAggregator
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def match_teams(odds_team, game_team):
+    """Fuzzy team name matching."""
+    odds_lower = odds_team.lower()
+    game_lower = game_team.lower()
+    return odds_lower in game_lower or game_lower in odds_lower
 
 
 def enrich_odds(sport='NBA', season=None, limit=None):
@@ -27,7 +34,6 @@ def enrich_odds(sport='NBA', season=None, limit=None):
     """
     db = DatabaseManager('data/sports_data.db')
     odds_api = TheOddsAPIClient()
-    aggregator = MultiSourceAggregator()
     
     # Query for games needing odds
     query = 'SELECT game_id, date, home_team, away_team, season FROM games WHERE sport = ? AND has_odds = 0'
@@ -53,55 +59,82 @@ def enrich_odds(sport='NBA', season=None, limit=None):
     
     enriched = 0
     errors = 0
+    not_found = 0
+    
+    # Cache odds by date to minimize API calls
+    odds_cache = {}
     
     for game in games:
         game_id, date, home_team, away_team, game_season = game
         
         try:
-            # Try to get odds from cache or aggregator
-            odds_data = aggregator.get_historical_odds(
-                sport=sport,
-                home_team=home_team,
-                away_team=away_team,
-                game_date=date
-            )
+            # Fetch odds for this date (use cache if available)
+            if date not in odds_cache:
+                odds_games = odds_api.get_historical_odds(sport, date)
+                odds_cache[date] = odds_games
+            else:
+                odds_games = odds_cache[date]
+            
+            # Match game by teams
+            odds_data = None
+            for odds_game in odds_games:
+                if (match_teams(odds_game.get('home_team', ''), home_team) and
+                    match_teams(odds_game.get('away_team', ''), away_team)):
+                    odds_data = odds_game
+                    break
             
             if odds_data:
-                # Extract betting lines
-                odds_entry = {
-                    'game_id': game_id,
-                    'date': date,
-                    'sport': sport,
-                    'home_team': home_team,
-                    'away_team': away_team,
-                    'bookmaker': odds_data.get('bookmaker', 'aggregated'),
-                    'market_type': odds_data.get('market_type'),
-                    'odds_data': odds_data
-                }
+                # Insert odds into odds_history table (multiple rows for each market)
+                timestamp = int(datetime.now().timestamp())
+                bookmaker = odds_data.get('bookmaker', 'fanduel')
                 
-                # Insert into odds_history table
-                db.insert_odds_history(odds_entry)
+                # Insert moneyline odds
+                moneyline = odds_data.get('moneyline', {})
+                if moneyline:
+                    cursor.execute('''
+                        INSERT OR IGNORE INTO odds_history 
+                        (game_id, bookmaker, market_type, home_odds, away_odds, timestamp, source)
+                        VALUES (?, ?, 'moneyline', ?, ?, ?, 'oddsapi')
+                    ''', (game_id, bookmaker, moneyline.get('home'), moneyline.get('away'), timestamp))
+                
+                # Insert spread odds
+                spread = odds_data.get('spread', {})
+                if spread:
+                    cursor.execute('''
+                        INSERT OR IGNORE INTO odds_history 
+                        (game_id, bookmaker, market_type, line, home_odds, away_odds, timestamp, source)
+                        VALUES (?, ?, 'spread', ?, ?, ?, ?, 'oddsapi')
+                    ''', (game_id, bookmaker, spread.get('line'), spread.get('home_odds'), spread.get('away_odds'), timestamp))
+                
+                # Insert total odds
+                total = odds_data.get('total', {})
+                if total:
+                    cursor.execute('''
+                        INSERT OR IGNORE INTO odds_history 
+                        (game_id, bookmaker, market_type, line, over_odds, under_odds, timestamp, source)
+                        VALUES (?, ?, 'total', ?, ?, ?, ?, 'oddsapi')
+                    ''', (game_id, bookmaker, total.get('line'), total.get('over_odds'), total.get('under_odds'), timestamp))
                 
                 # Update game record with flattened odds
                 update_data = {
                     'has_odds': 1,
-                    'updated_at': int(datetime.now().timestamp())
+                    'updated_at': timestamp
                 }
                 
                 # Extract main betting lines if available
-                if 'moneyline' in odds_data:
-                    update_data['moneyline_home'] = odds_data['moneyline'].get('home')
-                    update_data['moneyline_away'] = odds_data['moneyline'].get('away')
+                if moneyline:
+                    update_data['moneyline_home'] = moneyline.get('home')
+                    update_data['moneyline_away'] = moneyline.get('away')
                 
-                if 'spread' in odds_data:
-                    update_data['spread_line'] = odds_data['spread'].get('line')
-                    update_data['spread_home_odds'] = odds_data['spread'].get('home_odds')
-                    update_data['spread_away_odds'] = odds_data['spread'].get('away_odds')
+                if spread:
+                    update_data['spread_line'] = spread.get('line')
+                    update_data['spread_home_odds'] = spread.get('home_odds')
+                    update_data['spread_away_odds'] = spread.get('away_odds')
                 
-                if 'total' in odds_data:
-                    update_data['total_line'] = odds_data['total'].get('line')
-                    update_data['total_over_odds'] = odds_data['total'].get('over_odds')
-                    update_data['total_under_odds'] = odds_data['total'].get('under_odds')
+                if total:
+                    update_data['total_line'] = total.get('line')
+                    update_data['total_over_odds'] = total.get('over_odds')
+                    update_data['total_under_odds'] = total.get('under_odds')
                 
                 # Build UPDATE query
                 set_clause = ', '.join([f"{k} = ?" for k in update_data.keys()])
@@ -117,13 +150,7 @@ def enrich_odds(sport='NBA', season=None, limit=None):
                 if enriched % 10 == 0:
                     logger.info(f"  Progress: {enriched}/{len(games)} games enriched")
             else:
-                # Mark as checked even if no odds found
-                cursor.execute(
-                    'UPDATE games SET has_odds = -1, updated_at = ? WHERE game_id = ?',
-                    (int(datetime.now().timestamp()), game_id)
-                )
-                conn.commit()
-                logger.debug(f"  No odds found for game {game_id}")
+                not_found += 1
                 
         except Exception as e:
             logger.error(f"  Error enriching odds for {game_id}: {e}")
@@ -132,7 +159,7 @@ def enrich_odds(sport='NBA', season=None, limit=None):
     
     logger.info(f"\n✅ Odds enrichment complete!")
     logger.info(f"   Enriched: {enriched}")
-    logger.info(f"   Not found: {len(games) - enriched - errors}")
+    logger.info(f"   Not found: {not_found}")
     logger.info(f"   Errors: {errors}")
 
 
