@@ -24,7 +24,6 @@ def check_status(db_path='data/sports_data.db'):
             COUNT(*) as total_games,
             SUM(has_player_stats) as with_stats,
             SUM(has_odds) as with_odds,
-            SUM(has_perplexity) as with_perplexity,
             MIN(date) as first_game,
             MAX(date) as last_game
         FROM games
@@ -39,26 +38,23 @@ def check_status(db_path='data/sports_data.db'):
         return
     
     # Print results
-    print("\n{:<8} {:<8} {:<8} {:<20} {:<20} {:<20} {:<12} {:<12}".format(
-        'Sport', 'Season', 'Total', 'Stats', 'Odds', 'Perplexity', 'First', 'Last'
+    print("\n{:<8} {:<8} {:<8} {:<20} {:<20} {:<12} {:<12}".format(
+        'Sport', 'Season', 'Total', 'Stats', 'Odds', 'First', 'Last'
     ))
-    print("-" * 120)
+    print("-" * 100)
     
     for row in results:
-        sport, season, total, stats, odds, perplexity, first, last = row
+        sport, season, total, stats, odds, first, last = row
         
         # Handle NULL values
         stats = stats or 0
         odds = odds or 0
-        perplexity = perplexity or 0
-        
         # Calculate percentages
         stats_pct = f"{stats}/{total} ({stats*100/total:.0f}%)" if total > 0 else "0/0"
         odds_pct = f"{odds}/{total} ({odds*100/total:.0f}%)" if total > 0 else "0/0"
-        perp_pct = f"{perplexity}/{total} ({perplexity*100/total:.0f}%)" if total > 0 else "0/0"
         
-        print("{:<8} {:<8} {:<8} {:<20} {:<20} {:<20} {:<12} {:<12}".format(
-            sport, season or 'N/A', total, stats_pct, odds_pct, perp_pct, first or 'N/A', last or 'N/A'
+        print("{:<8} {:<8} {:<8} {:<20} {:<20} {:<12} {:<12}".format(
+            sport, season or 'N/A', total, stats_pct, odds_pct, first or 'N/A', last or 'N/A'
         ))
     
     # Summary by sport
@@ -67,8 +63,7 @@ def check_status(db_path='data/sports_data.db'):
             sport,
             COUNT(*) as total_games,
             SUM(has_player_stats) as with_stats,
-            SUM(CASE WHEN has_odds > 0 THEN 1 ELSE 0 END) as with_odds,
-            SUM(has_perplexity) as with_perplexity
+            SUM(CASE WHEN has_odds > 0 THEN 1 ELSE 0 END) as with_odds
         FROM games
         GROUP BY sport
     """)
@@ -79,22 +74,21 @@ def check_status(db_path='data/sports_data.db'):
     print("📈 SUMMARY BY SPORT")
     print("="*80)
     
-    print("\n{:<8} {:<12} {:<20} {:<20} {:<20} {:<20}".format(
-        'Sport', 'Total', 'Stats', 'Odds', 'Perplexity', 'Complete'
+    print("\n{:<8} {:<12} {:<20} {:<20} {:<20}".format(
+        'Sport', 'Total', 'Stats', 'Odds', 'Complete'
     ))
-    print("-" * 100)
+    print("-" * 90)
     
     for row in sport_summary:
-        sport, total, stats, odds, perplexity = row
-        complete = min(stats, odds, perplexity) if total > 0 else 0
+        sport, total, stats, odds = row
+        complete = min(stats, odds) if total > 0 else 0
         complete_pct = f"{complete}/{total} ({complete*100/total:.0f}%)" if total > 0 else "0/0"
         
-        print("{:<8} {:<12} {:<20} {:<20} {:<20} {:<20}".format(
+        print("{:<8} {:<12} {:<20} {:<20} {:<20}".format(
             sport,
             total,
             f"{stats} ({stats*100/total:.0f}%)" if total > 0 else "0",
             f"{odds} ({odds*100/total:.0f}%)" if total > 0 else "0",
-            f"{perplexity} ({perplexity*100/total:.0f}%)" if total > 0 else "0",
             complete_pct
         ))
     

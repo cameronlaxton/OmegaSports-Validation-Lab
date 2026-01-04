@@ -277,6 +277,32 @@ class SQLiteHistoricalCollector:
                 # Convert to our format and insert into database
                 for game in chunk_games:
                     game_data = self._convert_balldontlie_game(game, sport, season)
+
+                    # Preserve existing enrichment flags/data to avoid overwriting progress on resume
+                    existing = self.db_manager.get_game(game_data['game_id'])
+                    if existing:
+                        preserve_keys = [
+                            'has_player_stats',
+                            'has_odds',
+                            'has_perplexity',
+                            'player_stats',
+                            'home_team_stats',
+                            'away_team_stats',
+                            'moneyline_home',
+                            'moneyline_away',
+                            'spread_line',
+                            'spread_home_odds',
+                            'spread_away_odds',
+                            'total_line',
+                            'total_over_odds',
+                            'total_under_odds'
+                        ]
+                        for key in preserve_keys:
+                            if key in existing and existing[key] not in [None, '', 0, [], {}]:
+                                game_data[key] = existing.get(key)
+                        # Keep original created_at timestamp
+                        if 'created_at' in existing:
+                            game_data['created_at'] = existing['created_at']
                     
                     # Write to database immediately (crash-safe)
                     with self.write_lock:
@@ -469,13 +495,10 @@ class SQLiteHistoricalCollector:
                     sport=sport.lower(),
                     date=date
                 )
-                
+
                 if odds:
-                    # Find matching game
                     for odds_game in odds:
-                        # Store in odds_history table
                         bookmakers = odds_game.get('bookmakers', [])
-                        
                         for bookmaker in bookmakers:
                             for market in bookmaker.get('markets', []):
                                 odds_record = {
@@ -485,17 +508,16 @@ class SQLiteHistoricalCollector:
                                     'source': 'oddsapi',
                                     'timestamp': int(datetime.now().timestamp())
                                 }
-                                
-                                # Parse outcomes
+
                                 outcomes = market.get('outcomes', [])
                                 for outcome in outcomes:
                                     name = outcome.get('name', '').lower()
                                     price = outcome.get('price')
                                     point = outcome.get('point')
-                                    
-                                    if point:
+
+                                    if point is not None:
                                         odds_record['line'] = point
-                                    
+
                                     if 'home' in name:
                                         odds_record['home_odds'] = price
                                     elif 'away' in name:
@@ -504,25 +526,108 @@ class SQLiteHistoricalCollector:
                                         odds_record['over_odds'] = price
                                     elif 'under' in name:
                                         odds_record['under_odds'] = price
-                                
-                                # Insert odds
+
                                 with self.write_lock:
                                     self.db_manager.insert_odds_history(odds_record)
-                    
+
                     game['has_odds'] = 1
-                
-                # Update game
+
+                # Fallbacks: OddsPortal then Covers
+                if not game.get('has_odds'):
+                    fallback_sources = [
+                        ('oddsportal', self.oddsportal.scrape_game_odds),
+                        ('covers', self.covers.scrape_game_odds)
+                    ]
+
+                    for source_name, scraper in fallback_sources:
+                        scraped_games = scraper(sport=sport, date=date) or []
+                        matched = self._match_scraped_game(scraped_games, game)
+
+                        if matched:
+                            inserted = self._persist_scraped_odds(game_id, matched, source_name)
+                            if inserted:
+                                game['has_odds'] = 1
+                                break
+
+                # Update game record
                 with self.write_lock:
                     self.db_manager.insert_game(game)
-                
+
                 if (idx + 1) % 50 == 0:
                     logger.info(f"  Progress: {idx + 1}/{len(games)} games with odds")
-                
+
             except Exception as e:
                 logger.error(f"  Error fetching odds for {game['game_id']}: {e}")
                 self.stats['errors'] += 1
         
         return games
+
+    def _match_scraped_game(
+        self,
+        scraped_games: List[Dict[str, Any]],
+        target_game: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """Find scraped game matching target teams."""
+        home = target_game.get('home_team', '').lower()
+        away = target_game.get('away_team', '').lower()
+
+        for scraped in scraped_games:
+            s_home = scraped.get('home_team', '').lower()
+            s_away = scraped.get('away_team', '').lower()
+
+            if self._teams_match(home, s_home) and self._teams_match(away, s_away):
+                return scraped
+
+        return None
+
+    def _persist_scraped_odds(
+        self,
+        game_id: str,
+        scraped_game: Dict[str, Any],
+        source_name: str
+    ) -> bool:
+        """Persist scraped odds to odds_history."""
+        moneyline = scraped_game.get('moneyline') or {}
+        spread = scraped_game.get('spread') or {}
+        inserted_any = False
+
+        if moneyline.get('home') is not None or moneyline.get('away') is not None:
+            odds_record = {
+                'game_id': game_id,
+                'bookmaker': source_name,
+                'market_type': 'moneyline',
+                'home_odds': moneyline.get('home'),
+                'away_odds': moneyline.get('away'),
+                'source': source_name,
+                'timestamp': int(datetime.now().timestamp())
+            }
+            with self.write_lock:
+                self.db_manager.insert_odds_history(odds_record)
+            inserted_any = True
+
+        if spread.get('line') is not None:
+            odds_record = {
+                'game_id': game_id,
+                'bookmaker': source_name,
+                'market_type': 'spread',
+                'line': spread.get('line'),
+                'home_odds': spread.get('odds'),
+                'source': source_name,
+                'timestamp': int(datetime.now().timestamp())
+            }
+            with self.write_lock:
+                self.db_manager.insert_odds_history(odds_record)
+            inserted_any = True
+
+        return inserted_any
+
+    def _teams_match(self, a: str, b: str) -> bool:
+        """Basic fuzzy team matcher for scraper alignment."""
+        def norm(t: str) -> str:
+            return t.lower().replace('.', '').replace('-', ' ').replace('_', ' ').strip()
+
+        na, nb = norm(a), norm(b)
+        return na == nb or na in nb or nb in na
     
     def _enrich_with_perplexity(
         self,

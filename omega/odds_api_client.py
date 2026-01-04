@@ -87,6 +87,7 @@ class TheOddsAPIClient:
         Returns:
             List of games with betting odds
         """
+
         if not self.api_key:
             logger.debug("No API key - skipping odds fetch")
             return []
@@ -167,6 +168,21 @@ class TheOddsAPIClient:
         except requests.RequestException as e:
             logger.error(f"Error fetching odds from The Odds API: {e}")
             return []
+
+    def fetch_historical_odds(
+        self,
+        sport: str,
+        date: str,
+        markets: Optional[List[str]] = None,
+        regions: str = "us"
+    ) -> List[Dict[str, Any]]:
+        """Compatibility wrapper used by older scripts."""
+        return self.get_historical_odds(
+            sport=sport,
+            date=date,
+            markets=markets,
+            regions=regions
+        )
     
     def _parse_odds_response(self, data: List[Dict]) -> List[Dict[str, Any]]:
         """Parse The Odds API response into our format."""
