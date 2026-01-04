@@ -179,8 +179,18 @@ class SimpleDataCollector:
         
         for idx, (game_id, game_date) in enumerate(games_needing_stats):
             try:
-                # Fetch stats for single game
-                stats = self.bdl.get_game_stats([int(game_id)])
+                # Fetch stats for single game (only for numeric game IDs)
+                # BallDontLie API only supports numeric game IDs
+                # Skip games with string IDs like 'nba_473679' (from ESPN/other sources)
+                try:
+                    numeric_game_id = int(game_id)
+                except (ValueError, TypeError):
+                    errors += 1
+                    if errors <= 5:
+                        logger.error(f"  Error for game {game_id}: Skipping non-numeric game ID (likely from ESPN API)")
+                    continue
+                
+                stats = self.bdl.get_game_stats([numeric_game_id])
                 
                 if stats:
                     self._update_game_stats(game_id, stats)

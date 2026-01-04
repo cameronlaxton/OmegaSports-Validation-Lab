@@ -29,10 +29,20 @@ log ""
 log "PHASE 1: STATS COLLECTION"
 log "--------"
 
-SEASONS_STATS=(2019 2022 2023 2024)
-for YEAR in "${SEASONS_STATS[@]}"; do
-    log "Starting NBA $YEAR stats collection..."
-    if $PYTHON $SCRIPT --sport NBA --years $YEAR --phase stats >> "$UNIFIED_LOG" 2>&1; then
+# Season 2019 uses numeric game IDs (from BallDontLie)
+log "Starting NBA 2019 stats collection (BallDontLie API)..."
+if $PYTHON $SCRIPT --sport NBA --years 2019 --phase stats >> "$UNIFIED_LOG" 2>&1; then
+    log "✓ Completed NBA 2019 stats collection"
+else
+    log "✗ ERROR in NBA 2019 stats collection (exit code $?)"
+fi
+log ""
+
+# Seasons 2022-2024 have ESPN game IDs - use enrich_stats.py which supports ESPN scraping
+SEASONS_ESPN=(2022 2023 2024)
+for YEAR in "${SEASONS_ESPN[@]}"; do
+    log "Starting NBA $YEAR stats collection (ESPN fallback support)..."
+    if $PYTHON /workspaces/OmegaSports-Validation-Lab/scripts/enrich_stats.py --sport NBA --season $YEAR >> "$UNIFIED_LOG" 2>&1; then
         log "✓ Completed NBA $YEAR stats collection"
     else
         log "✗ ERROR in NBA $YEAR stats collection (exit code $?)"
