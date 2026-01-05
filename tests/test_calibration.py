@@ -282,6 +282,7 @@ class TestMetricsCalculations:
             total_bets=100,
             winning_bets=52,
             losing_bets=48,
+            push_bets=0,
             total_staked=100.0,
             total_profit=5.0,
             brier_score=0.25,
@@ -302,6 +303,7 @@ class TestMetricsCalculations:
             total_bets=100,
             winning_bets=52,
             losing_bets=48,
+            push_bets=0,
             total_staked=100.0,
             total_profit=5.0,
             brier_score=0.25,
@@ -322,6 +324,7 @@ class TestMetricsCalculations:
             total_bets=100,
             winning_bets=52,
             losing_bets=48,
+            push_bets=0,
             total_staked=100.0,
             total_profit=5.0,
             brier_score=0.25,
@@ -340,6 +343,7 @@ class TestMetricsCalculations:
             total_bets=100,
             winning_bets=52,
             losing_bets=48,
+            push_bets=0,
             total_staked=100.0,
             total_profit=5.0,
             brier_score=0.25,
@@ -353,6 +357,34 @@ class TestMetricsCalculations:
         assert 'sharpe' in metrics_dict
         assert 'hit_rate' in metrics_dict
         assert metrics_dict['total_bets'] == 100
+    
+    def test_metrics_with_pushes(self):
+        """Test that pushes are correctly excluded from hit rate calculation."""
+        # 50 wins, 40 losses, 10 pushes = 100 total bets
+        # Hit rate should be 50 / (50 + 40) = 0.556, NOT 50 / 100 = 0.5
+        metrics = CalibrationMetrics(
+            roi=0.02,
+            sharpe=0.8,
+            max_drawdown=5.0,
+            hit_rate=0.556,
+            total_bets=100,
+            winning_bets=50,
+            losing_bets=40,
+            push_bets=10,
+            total_staked=100.0,
+            total_profit=2.0,
+            brier_score=0.24,
+            log_loss=0.68
+        )
+        
+        # Verify pushes are tracked separately
+        assert metrics.push_bets == 10
+        assert metrics.winning_bets == 50
+        assert metrics.losing_bets == 40
+        assert metrics.total_bets == 100
+        
+        # Verify winning + losing + pushes = total
+        assert metrics.winning_bets + metrics.losing_bets + metrics.push_bets == metrics.total_bets
 
 
 class TestCalibrationRunner:

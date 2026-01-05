@@ -69,6 +69,7 @@ class CalibrationMetrics:
     total_bets: int
     winning_bets: int
     losing_bets: int
+    push_bets: int
     total_staked: float
     total_profit: float
     brier_score: float
@@ -389,8 +390,6 @@ class CalibrationRunner:
         threshold: float,
         market_type: str,
         probability_transforms: Optional[Dict[str, Any]] = None
-    ) -> CalibrationMetrics:
-        market_type: str
     ) -> Tuple[CalibrationMetrics, List[Dict[str, Any]]]:
         """
         Evaluate a specific edge threshold.
@@ -742,6 +741,7 @@ class CalibrationRunner:
                 total_bets=0,
                 winning_bets=0,
                 losing_bets=0,
+                push_bets=0,
                 total_staked=0.0,
                 total_profit=0.0,
                 brier_score=0.0,
@@ -751,13 +751,16 @@ class CalibrationRunner:
         # Basic stats
         total_bets = len(bets)
         winning_bets = sum(1 for b in bets if b['outcome'] == 1.0)
-        losing_bets = total_bets - winning_bets
+        push_bets = sum(1 for b in bets if b['outcome'] == 0.5)
+        losing_bets = sum(1 for b in bets if b['outcome'] == 0.0)
         total_staked = sum(b['stake'] for b in bets)
         total_profit = sum(b['profit'] for b in bets)
         
         # Performance metrics
         roi = (total_profit / total_staked) if total_staked > 0 else 0.0
-        hit_rate = winning_bets / total_bets if total_bets > 0 else 0.0
+        # Hit rate excludes pushes - it's wins / (wins + losses)
+        decidable_bets = total_bets - push_bets
+        hit_rate = winning_bets / decidable_bets if decidable_bets > 0 else 0.0
         
         # Risk metrics
         profits = [b['profit'] for b in bets]
@@ -790,6 +793,7 @@ class CalibrationRunner:
             total_bets=total_bets,
             winning_bets=winning_bets,
             losing_bets=losing_bets,
+            push_bets=push_bets,
             total_staked=total_staked,
             total_profit=total_profit,
             brier_score=brier_score,
@@ -944,13 +948,12 @@ class CalibrationRunner:
             market_data = [r for r in test_calibration if r['market_type'] == market_type]
             threshold = edge_thresholds[market_type]
             
-            metrics = self._evaluate_threshold(
+            metrics, bets = self._evaluate_threshold(
                 market_data,
                 threshold,
                 market_type,
                 probability_transforms
             )
-            metrics, bets = self._evaluate_threshold(market_data, threshold, market_type)
             all_bets.extend(bets)
             
             logger.info(f"\n{market_type.upper()} Results:")
