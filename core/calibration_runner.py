@@ -323,7 +323,7 @@ class CalibrationRunner:
         best_sharpe = -999
         
         for threshold in thresholds:
-            metrics, _ = self._evaluate_threshold(market_data, threshold, market_type, None)
+            metrics, _ = self._evaluate_threshold(market_data, threshold, market_type)
             
             # Require minimum 100 bets and 45% hit rate
             if metrics.total_bets >= 100 and metrics.hit_rate >= 0.45:
@@ -770,12 +770,12 @@ class CalibrationRunner:
     
     def run_backtest(
         self
-    ) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    ) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]], Dict[str, Any], Optional[Dict[str, Any]]]:
         """
         Run full backtesting pipeline.
         
         Returns:
-            Tuple of (edge_thresholds, metrics, reliability_bins, diagnostics)
+            Tuple of (edge_thresholds, metrics, reliability_bins, probability_transforms, diagnostics)
         """
         logger.info("\n" + "="*60)
         logger.info("STARTING BACKTEST CALIBRATION")
@@ -863,13 +863,14 @@ class CalibrationRunner:
         logger.info(f"Brier Score: {aggregate_metrics.brier_score:.4f}")
         logger.info("="*60 + "\n")
         
-        return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins, diagnostics
+        return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins, probability_transforms, diagnostics
     
     def generate_calibration_pack(
         self,
         edge_thresholds: Dict[str, float],
         metrics: Dict[str, Any],
         reliability_bins: List[Dict[str, Any]],
+        probability_transforms: Dict[str, Any],
         diagnostics: Optional[Dict[str, Any]] = None,
         output_path: Optional[str] = None
     ) -> CalibrationPack:
@@ -906,7 +907,10 @@ class CalibrationRunner:
             edge_thresholds=edge_thresholds,
             variance_scalars=self.DEFAULT_VARIANCE_SCALARS,
             kelly_policy=self.DEFAULT_KELLY_POLICY,
-            probability_transforms={},
+            probability_transforms={
+                'method': 'platt+shrink',
+                'markets': probability_transforms
+            },
             metrics=metrics,
             reliability_bins=reliability_bins,
             diagnostics=diagnostics,
@@ -1005,7 +1009,7 @@ Examples:
     )
     
     # Run backtest
-    edge_thresholds, metrics, reliability_bins, diagnostics = runner.run_backtest()
+    edge_thresholds, metrics, reliability_bins, probability_transforms, diagnostics = runner.run_backtest()
     
     # Generate calibration pack
     if args.output or not args.dry_run:
@@ -1018,6 +1022,7 @@ Examples:
             edge_thresholds,
             metrics,
             reliability_bins,
+            probability_transforms,
             diagnostics,
             output_path
         )
