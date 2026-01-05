@@ -371,7 +371,7 @@ class CalibrationRunner:
         best_sharpe = -999
         
         for threshold in thresholds:
-            metrics = self._evaluate_threshold(market_data, threshold, market_type)
+            metrics, _ = self._evaluate_threshold(market_data, threshold, market_type)
             
             # Require minimum 100 bets and 45% hit rate
             if metrics.total_bets >= 100 and metrics.hit_rate >= 0.45:
@@ -387,8 +387,11 @@ class CalibrationRunner:
         self,
         market_data: List[Dict[str, Any]],
         threshold: float,
-        market_type: str
+        market_type: str,
+        probability_transforms: Optional[Dict[str, Any]] = None
     ) -> CalibrationMetrics:
+        market_type: str
+    ) -> Tuple[CalibrationMetrics, List[Dict[str, Any]]]:
         """
         Evaluate a specific edge threshold.
         
@@ -398,7 +401,7 @@ class CalibrationRunner:
             market_type: Market type
             
         Returns:
-            Calibration metrics
+            Tuple of (calibration metrics, bet records)
         """
         bets = []
 
@@ -409,8 +412,8 @@ class CalibrationRunner:
             if market_type == 'moneyline':
                 home_odds = record.get('home_odds')
                 away_odds = record.get('away_odds')
-                
-                if not home_odds or not away_odds:
+
+                if home_odds is None or away_odds is None:
                     continue
                 
                 model_output = self._model_cache.get(record.get("game_id"))
@@ -464,11 +467,8 @@ class CalibrationRunner:
                     })
             
             elif market_type == 'spread':
-                line = record.get('market_expectation', 0)
-                home_score = record.get('home_score', 0)
-                away_score = record.get('away_score', 0)
-                
-                if home_score == 0 and away_score == 0:
+                market_result = self._get_market_prob_and_outcome(record, market_type)
+                if not market_result:
                     continue
                 
                 margin = home_score - away_score
@@ -588,8 +588,42 @@ class CalibrationRunner:
                         'stake': stake,
                         'profit': profit
                     })
+
+            elif market_type == 'total':
+                market_result = self._get_market_prob_and_outcome(record, market_type)
+                if not market_result:
+                    continue
+
+                market_prob, outcome = market_result
+                model_prob = market_prob
+                prob = model_prob
+
+                if transform:
+                    calibrated_prob = apply_platt(
+                        np.array([model_prob]),
+                        transform.get('platt_coefficients', {'a': 1.0, 'b': 0.0})
+                    )[0]
+                    prob = shrink_toward_market(
+                        np.array([calibrated_prob]),
+                        np.array([market_prob]),
+                        transform.get('shrinkage_alpha', 0.0)
+                    )[0]
+
+                edge = abs(0.5 - prob)
+
+                if edge >= threshold:
+                    stake = 1.0
+                    profit = stake * (1.0 / prob - 1.0) if outcome == 1.0 else -stake
+
+                    bets.append({
+                        'edge': edge,
+                        'prob': prob,
+                        'outcome': outcome,
+                        'stake': stake,
+                        'profit': profit
+                    })
         
-        return self._calculate_metrics(bets)
+        return self._calculate_metrics(bets), bets
     
     def _american_to_prob(self, american_odds: int) -> float:
         """
@@ -605,6 +639,89 @@ class CalibrationRunner:
             return abs(american_odds) / (abs(american_odds) + 100)
         else:
             return 100 / (american_odds + 100)
+
+    def _get_market_prob_and_outcome(
+        self,
+        record: Dict[str, Any],
+        market_type: str
+    ) -> Optional[Tuple[float, float]]:
+        """
+        Get market implied probability and outcome for a given record.
+
+        Returns:
+            Tuple of (market_prob, outcome) or None if unavailable.
+        """
+        home_score = record.get('home_score', 0)
+        away_score = record.get('away_score', 0)
+
+        if market_type == 'moneyline':
+            home_odds = record.get('home_odds')
+            away_odds = record.get('away_odds')
+            if home_odds is None or away_odds is None:
+                return None
+            market_prob = self._american_to_prob(home_odds)
+            outcome = 1.0 if home_score > away_score else 0.0
+            return market_prob, outcome
+
+        if market_type == 'spread':
+            home_odds = record.get('home_odds')
+            line = record.get('market_expectation')
+            if home_odds is None or line is None:
+                return None
+            margin = home_score - away_score
+            market_prob = self._american_to_prob(home_odds)
+            outcome = 1.0 if margin > line else 0.0
+            return market_prob, outcome
+
+        if market_type == 'total':
+            over_odds = record.get('over_odds')
+            line = record.get('market_expectation')
+            if over_odds is None or line is None:
+                return None
+            total_score = home_score + away_score
+            market_prob = self._american_to_prob(over_odds)
+            outcome = 1.0 if total_score > line else 0.0
+            return market_prob, outcome
+
+        return None
+
+    def _extract_probabilities(
+        self,
+        calibration_data: List[Dict[str, Any]],
+        market_type: str
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Extract model, market probabilities and outcomes from calibration data.
+
+        Returns:
+            Tuple of (model_probs, market_probs, outcomes).
+        """
+        model_probs = []
+        market_probs = []
+        outcomes = []
+
+        for record in calibration_data:
+            if record.get('market_type') != market_type:
+                continue
+
+            market_result = self._get_market_prob_and_outcome(record, market_type)
+            if not market_result:
+                continue
+
+            market_prob, outcome = market_result
+
+            # Placeholder: model probabilities currently align with market-implied probs.
+            model_prob = market_prob
+
+            model_probs.append(model_prob)
+            market_probs.append(market_prob)
+            outcomes.append(outcome)
+
+        return (
+            np.array(model_probs, dtype=float),
+            np.array(market_probs, dtype=float),
+            np.array(outcomes, dtype=float)
+        )
     
     def _calculate_metrics(self, bets: List[Dict[str, Any]]) -> CalibrationMetrics:
         """
@@ -723,13 +840,70 @@ class CalibrationRunner:
                 })
         
         return bins
+
+    def fit_probability_transforms(
+        self,
+        calibration_data: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        Fit Platt scaling coefficients and shrinkage alphas per market type.
+
+        Returns:
+            Dictionary with per-market transform settings.
+        """
+        transforms = {}
+        alpha_grid = np.arange(0.05, 0.26, 0.05)
+
+        for market_type in self.MARKET_TYPES:
+            model_probs, market_probs, outcomes = self._extract_probabilities(
+                calibration_data,
+                market_type
+            )
+
+            if model_probs.size == 0:
+                transforms[market_type] = {
+                    'method': 'platt+shrink',
+                    'platt_coefficients': {'a': 1.0, 'b': 0.0},
+                    'shrinkage_alpha': 0.1,
+                    'notes': 'Insufficient data; defaults applied.'
+                }
+                continue
+
+            calibrated_probs, coefficients = calibrate_probabilities_platt(
+                model_probs,
+                outcomes
+            )
+
+            best_alpha = 0.1
+            best_brier = float('inf')
+
+            for alpha in alpha_grid:
+                shrunk_probs = shrink_toward_market(
+                    calibrated_probs,
+                    market_probs,
+                    alpha
+                )
+                brier = float(np.mean((shrunk_probs - outcomes) ** 2))
+                if brier < best_brier:
+                    best_brier = brier
+                    best_alpha = float(alpha)
+
+            transforms[market_type] = {
+                'method': 'platt+shrink',
+                'platt_coefficients': coefficients,
+                'shrinkage_alpha': best_alpha
+            }
+
+        return transforms
     
-    def run_backtest(self) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]]]:
+    def run_backtest(
+        self
+    ) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]], Dict[str, Any]]:
         """
         Run full backtesting pipeline.
         
         Returns:
-            Tuple of (edge_thresholds, metrics, reliability_bins)
+            Tuple of (edge_thresholds, metrics, reliability_bins, probability_transforms)
         """
         logger.info("\n" + "="*60)
         logger.info("STARTING BACKTEST CALIBRATION")
@@ -744,8 +918,12 @@ class CalibrationRunner:
             self.start_date,
             self.train_end_date
         )
+
+        # Step 3: Fit probability calibration transforms
+        logger.info("\nFitting probability calibration transforms...")
+        probability_transforms = self.fit_probability_transforms(train_calibration)
         
-        # Step 3: Tune edge thresholds
+        # Step 4: Tune edge thresholds
         logger.info("\nTuning edge thresholds...")
         edge_thresholds = {}
         
@@ -753,7 +931,7 @@ class CalibrationRunner:
             threshold = self.tune_edge_thresholds(train_calibration, market_type)
             edge_thresholds[market_type] = threshold
         
-        # Step 4: Evaluate on test set
+        # Step 5: Evaluate on test set
         logger.info("\nEvaluating on test set...")
         test_calibration = self.load_calibration_data(
             self.train_end_date,
@@ -766,7 +944,14 @@ class CalibrationRunner:
             market_data = [r for r in test_calibration if r['market_type'] == market_type]
             threshold = edge_thresholds[market_type]
             
-            metrics = self._evaluate_threshold(market_data, threshold, market_type)
+            metrics = self._evaluate_threshold(
+                market_data,
+                threshold,
+                market_type,
+                probability_transforms
+            )
+            metrics, bets = self._evaluate_threshold(market_data, threshold, market_type)
+            all_bets.extend(bets)
             
             logger.info(f"\n{market_type.upper()} Results:")
             logger.info(f"  Threshold: {threshold:.3f}")
@@ -777,11 +962,11 @@ class CalibrationRunner:
             logger.info(f"  Max Drawdown: {metrics.max_drawdown:.2f} units")
             logger.info(f"  Brier Score: {metrics.brier_score:.4f}")
         
-        # Step 5: Calculate reliability bins
+        # Step 6: Calculate reliability bins
         logger.info("\nCalculating reliability calibration...")
         reliability_bins = self.calculate_reliability_bins(all_bets)
         
-        # Step 6: Aggregate metrics
+        # Step 7: Aggregate metrics
         aggregate_metrics = self._calculate_metrics(all_bets)
         
         logger.info("\n" + "="*60)
@@ -795,13 +980,14 @@ class CalibrationRunner:
         logger.info(f"Brier Score: {aggregate_metrics.brier_score:.4f}")
         logger.info("="*60 + "\n")
         
-        return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins
+        return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins, probability_transforms
     
     def generate_calibration_pack(
         self,
         edge_thresholds: Dict[str, float],
         metrics: Dict[str, Any],
         reliability_bins: List[Dict[str, Any]],
+        probability_transforms: Dict[str, Any],
         output_path: Optional[str] = None
     ) -> CalibrationPack:
         """
@@ -838,8 +1024,8 @@ class CalibrationRunner:
             variance_scalars=self.DEFAULT_VARIANCE_SCALARS,
             kelly_policy=self.DEFAULT_KELLY_POLICY,
             probability_transforms={
-                'method': 'none',
-                'notes': 'Future: Implement isotonic regression or Platt scaling'
+                'method': 'platt+shrink',
+                'markets': probability_transforms
             },
             metrics=metrics,
             reliability_bins=reliability_bins,
@@ -938,7 +1124,7 @@ Examples:
     )
     
     # Run backtest
-    edge_thresholds, metrics, reliability_bins = runner.run_backtest()
+    edge_thresholds, metrics, reliability_bins, probability_transforms = runner.run_backtest()
     
     # Generate calibration pack
     if args.output or not args.dry_run:
@@ -951,6 +1137,7 @@ Examples:
             edge_thresholds,
             metrics,
             reliability_bins,
+            probability_transforms,
             output_path
         )
         
