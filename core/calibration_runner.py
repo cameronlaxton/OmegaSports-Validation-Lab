@@ -323,7 +323,7 @@ class CalibrationRunner:
         best_sharpe = -999
         
         for threshold in thresholds:
-            metrics, _ = self._evaluate_threshold(market_data, threshold, market_type)
+            metrics, _ = self._evaluate_threshold(market_data, threshold, market_type, None)
             
             # Require minimum 100 bets and 45% hit rate
             if metrics.total_bets >= 100 and metrics.hit_rate >= 0.45:
