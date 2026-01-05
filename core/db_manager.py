@@ -776,7 +776,9 @@ class DatabaseManager:
         sport: str,
         start_date: str,
         end_date: str,
-        market_type: Optional[str] = None
+        market_type: Optional[str] = None,
+        snapshot: str = "closing",
+        window_minutes: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         Get calibration data for market accuracy analysis.
@@ -789,6 +791,8 @@ class DatabaseManager:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
             market_type: Filter by market ('spread', 'total', 'moneyline')
+            snapshot: Snapshot selection ("closing" for latest, "window" for time window)
+            window_minutes: Minutes before game start to include when snapshot="window"
             
         Returns:
             List of dicts with {result, expectation, accuracy}
@@ -802,9 +806,50 @@ class DatabaseManager:
         """
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
+        if snapshot not in {"closing", "window"}:
+            raise ValueError("snapshot must be 'closing' or 'window'")
+
+        if snapshot == "window" and not window_minutes:
+            raise ValueError("window_minutes must be provided when snapshot='window'")
+
         query = """
-            SELECT 
+            WITH filtered_odds AS (
+                SELECT o.*
+                FROM odds_history o
+                JOIN games g ON g.game_id = o.game_id
+                WHERE g.sport = ?
+                    AND g.date >= ?
+                    AND g.date <= ?
+                    AND g.home_score IS NOT NULL
+                    AND g.away_score IS NOT NULL
+        """
+
+        params = [sport, start_date, end_date]
+
+        if market_type:
+            query += " AND o.market_type = ?"
+            params.append(market_type)
+
+        if snapshot == "window":
+            query += """
+                    AND o.timestamp BETWEEN (CAST(strftime('%s', g.date) AS INTEGER) - ?)
+                    AND CAST(strftime('%s', g.date) AS INTEGER)
+            """
+            params.append(window_minutes * 60)
+
+        query += """
+            ),
+            latest_odds AS (
+                SELECT
+                    game_id,
+                    bookmaker,
+                    market_type,
+                    MAX(timestamp) AS max_timestamp
+                FROM filtered_odds
+                GROUP BY game_id, bookmaker, market_type
+            )
+            SELECT
                 g.game_id,
                 g.date,
                 g.home_team,
@@ -819,22 +864,15 @@ class DatabaseManager:
                 o.over_odds,
                 o.under_odds,
                 o.timestamp AS market_snapshot_time
-            FROM games g
-            JOIN odds_history o ON g.game_id = o.game_id
-            WHERE g.sport = ? 
-                AND g.date >= ? 
-                AND g.date <= ?
-                AND g.home_score IS NOT NULL
-                AND g.away_score IS NOT NULL
+            FROM latest_odds lo
+            JOIN filtered_odds o
+                ON o.game_id = lo.game_id
+                AND o.bookmaker = lo.bookmaker
+                AND o.market_type = lo.market_type
+                AND o.timestamp = lo.max_timestamp
+            JOIN games g ON g.game_id = o.game_id
+            ORDER BY g.date, g.game_id, o.timestamp
         """
-        
-        params = [sport, start_date, end_date]
-        
-        if market_type:
-            query += " AND o.market_type = ?"
-            params.append(market_type)
-        
-        query += " ORDER BY g.date, g.game_id, o.timestamp"
         
         cursor.execute(query, params)
         
