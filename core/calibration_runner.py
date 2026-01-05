@@ -321,7 +321,7 @@ class CalibrationRunner:
         best_sharpe = -999
         
         for threshold in thresholds:
-            metrics = self._evaluate_threshold(market_data, threshold, market_type)
+            metrics, _ = self._evaluate_threshold(market_data, threshold, market_type)
             
             # Require minimum 100 bets and 45% hit rate
             if metrics.total_bets >= 100 and metrics.hit_rate >= 0.45:
@@ -340,6 +340,8 @@ class CalibrationRunner:
         market_type: str,
         probability_transforms: Optional[Dict[str, Any]] = None
     ) -> CalibrationMetrics:
+        market_type: str
+    ) -> Tuple[CalibrationMetrics, List[Dict[str, Any]]]:
         """
         Evaluate a specific edge threshold.
         
@@ -349,7 +351,7 @@ class CalibrationRunner:
             market_type: Market type
             
         Returns:
-            Calibration metrics
+            Tuple of (calibration metrics, bet records)
         """
         bets = []
         transform = None
@@ -469,7 +471,7 @@ class CalibrationRunner:
                         'profit': profit
                     })
         
-        return self._calculate_metrics(bets)
+        return self._calculate_metrics(bets), bets
     
     def _american_to_prob(self, american_odds: int) -> float:
         """
@@ -796,6 +798,8 @@ class CalibrationRunner:
                 market_type,
                 probability_transforms
             )
+            metrics, bets = self._evaluate_threshold(market_data, threshold, market_type)
+            all_bets.extend(bets)
             
             logger.info(f"\n{market_type.upper()} Results:")
             logger.info(f"  Threshold: {threshold:.3f}")
