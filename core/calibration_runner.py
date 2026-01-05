@@ -36,6 +36,7 @@ Usage:
 import argparse
 import json
 import logging
+import math
 import os
 import sys
 from datetime import datetime
@@ -48,6 +49,7 @@ from dataclasses import dataclass, asdict
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.db_manager import DatabaseManager
+from core.simulation_framework import SimulationFramework, ExperimentConfig
 
 # Configure logging
 logging.basicConfig(
@@ -165,6 +167,8 @@ class CalibrationRunner:
         self.end_date = end_date
         self.train_split = train_split
         self.dry_run = dry_run
+        self.simulation = SimulationFramework()
+        self._model_cache: Dict[str, Dict[str, Any]] = {}
         
         # Calculate split date (time-based, no leakage)
         self.train_end_date = self._calculate_split_date()
@@ -195,6 +199,57 @@ class CalibrationRunner:
         split_date = start + timedelta(days=train_days)
         
         return split_date.strftime("%Y-%m-%d")
+
+    def _normal_cdf(self, value: float) -> float:
+        """Standard normal CDF."""
+        return 0.5 * (1.0 + math.erf(value / math.sqrt(2)))
+
+    def _implied_prob_from_odds(self, odds: Optional[int]) -> Optional[float]:
+        """Convert odds to implied probability if odds exist."""
+        if odds is None:
+            return None
+        return self._american_to_prob(odds)
+
+    def _ensure_model_predictions(self, market_data: List[Dict[str, Any]]) -> None:
+        """Populate model cache for calibration records."""
+        games_to_simulate = []
+        for record in market_data:
+            game_id = record.get("game_id")
+            if not game_id or game_id in self._model_cache:
+                continue
+            games_to_simulate.append({
+                "game_id": game_id,
+                "home_team": record.get("home_team"),
+                "away_team": record.get("away_team")
+            })
+
+        if not games_to_simulate:
+            return
+
+        config = ExperimentConfig(
+            module_name="calibration_runner",
+            sport=self.league,
+            variance_scalar=self.DEFAULT_VARIANCE_SCALARS.get(self.league, 1.0)
+        )
+        results = self.simulation.run_simulation(config, games_to_simulate)
+        for result in results.get("results", []):
+            game_id = result.get("game_id")
+            if game_id:
+                self._model_cache[game_id] = result
+
+    def _spread_cover_probability(self, mean_margin: float, line: float, sigma: float) -> float:
+        """Estimate home cover probability from spread mean and line."""
+        if sigma <= 0:
+            return 0.5
+        z = (mean_margin - line) / sigma
+        return self._normal_cdf(z)
+
+    def _total_over_probability(self, mean_total: float, line: float, sigma: float) -> float:
+        """Estimate over probability from total mean and line."""
+        if sigma <= 0:
+            return 0.5
+        z = (mean_total - line) / sigma
+        return self._normal_cdf(z)
     
     def load_data(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
         """
@@ -346,6 +401,8 @@ class CalibrationRunner:
             Calibration metrics
         """
         bets = []
+
+        self._ensure_model_predictions(market_data)
         
         for record in market_data:
             # Calculate market implied probability
@@ -356,32 +413,55 @@ class CalibrationRunner:
                 if not home_odds or not away_odds:
                     continue
                 
+                model_output = self._model_cache.get(record.get("game_id"))
+                if not model_output:
+                    continue
+
+                model_home_prob = model_output.get("home_win_prob")
+                if model_home_prob is None:
+                    continue
+                model_away_prob = model_output.get("away_win_prob")
+                if model_away_prob is None:
+                    model_away_prob = 1.0 - model_home_prob
+
                 # Convert American odds to implied probability
-                home_prob = self._american_to_prob(home_odds)
-                away_prob = self._american_to_prob(away_odds)
+                market_home_prob = self._american_to_prob(home_odds)
+                market_away_prob = self._american_to_prob(away_odds)
                 
                 # Determine winner
                 home_score = record.get('home_score', 0)
                 away_score = record.get('away_score', 0)
                 home_won = home_score > away_score
                 
-                # Simulate edge calculation (simplified)
-                # In real implementation, this would use model predictions
-                if home_prob < 0.5 and home_prob > 0.4:  # Simulated "value bet" detection
-                    edge = 0.5 - home_prob  # Simplified edge calculation
-                    
-                    if edge >= threshold:
-                        outcome = 1.0 if home_won else 0.0
-                        stake = 1.0
-                        profit = stake * (1.0 / home_prob - 1.0) if home_won else -stake
-                        
-                        bets.append({
-                            'edge': edge,
-                            'prob': home_prob,
-                            'outcome': outcome,
-                            'stake': stake,
-                            'profit': profit
-                        })
+                home_edge = model_home_prob - market_home_prob
+                away_edge = model_away_prob - market_away_prob
+
+                if home_edge >= away_edge:
+                    edge = home_edge
+                    model_prob = model_home_prob
+                    market_prob = market_home_prob
+                    outcome = 1.0 if home_won else 0.0
+                    odds_prob = market_home_prob
+                else:
+                    edge = away_edge
+                    model_prob = model_away_prob
+                    market_prob = market_away_prob
+                    outcome = 0.0 if home_won else 1.0
+                    odds_prob = market_away_prob
+
+                if edge >= threshold:
+                    stake = 1.0
+                    profit = stake * (1.0 / odds_prob - 1.0) if outcome == 1.0 else -stake
+
+                    bets.append({
+                        'edge': edge,
+                        'prob': model_prob,
+                        'model_prob': model_prob,
+                        'market_prob': market_prob,
+                        'outcome': outcome,
+                        'stake': stake,
+                        'profit': profit
+                    })
             
             elif market_type == 'spread':
                 line = record.get('market_expectation', 0)
@@ -393,20 +473,117 @@ class CalibrationRunner:
                 
                 margin = home_score - away_score
                 covered = margin > line
+                push = margin == line
                 
-                # Simplified edge detection
-                home_odds = record.get('home_odds', -110)
-                prob = self._american_to_prob(home_odds)
-                edge = abs(0.5 - prob)
+                model_output = self._model_cache.get(record.get("game_id"))
+                if not model_output:
+                    continue
+
+                mean_margin = model_output.get("spread_mean")
+                if mean_margin is None:
+                    continue
+
+                variance_scalar = self.DEFAULT_VARIANCE_SCALARS.get(self.league, 1.0)
+                sigma = 12.0 * variance_scalar
+                model_home_prob = self._spread_cover_probability(mean_margin, line, sigma)
+                model_away_prob = 1.0 - model_home_prob
+
+                home_odds = record.get('home_odds')
+                away_odds = record.get('away_odds')
+                market_home_prob = self._implied_prob_from_odds(home_odds) or 0.5
+                market_away_prob = self._implied_prob_from_odds(away_odds) or (1.0 - market_home_prob)
+
+                home_edge = model_home_prob - market_home_prob
+                away_edge = model_away_prob - market_away_prob
+
+                if home_edge >= away_edge:
+                    edge = home_edge
+                    model_prob = model_home_prob
+                    market_prob = market_home_prob
+                    outcome = 0.5 if push else (1.0 if covered else 0.0)
+                    odds_prob = market_home_prob
+                else:
+                    edge = away_edge
+                    model_prob = model_away_prob
+                    market_prob = market_away_prob
+                    outcome = 0.5 if push else (0.0 if covered else 1.0)
+                    odds_prob = market_away_prob
                 
                 if edge >= threshold:
-                    outcome = 1.0 if covered else 0.0
                     stake = 1.0
-                    profit = stake * (1.0 / prob - 1.0) if covered else -stake
+                    if push:
+                        profit = 0.0
+                    else:
+                        profit = stake * (1.0 / odds_prob - 1.0) if outcome == 1.0 else -stake
                     
                     bets.append({
                         'edge': edge,
-                        'prob': prob,
+                        'prob': model_prob,
+                        'model_prob': model_prob,
+                        'market_prob': market_prob,
+                        'outcome': outcome,
+                        'stake': stake,
+                        'profit': profit
+                    })
+
+            elif market_type == 'total':
+                line = record.get('market_expectation', 0)
+                home_score = record.get('home_score', 0)
+                away_score = record.get('away_score', 0)
+
+                if home_score == 0 and away_score == 0:
+                    continue
+
+                total_score = home_score + away_score
+                over_hit = total_score > line
+                push = total_score == line
+
+                model_output = self._model_cache.get(record.get("game_id"))
+                if not model_output:
+                    continue
+
+                mean_total = model_output.get("total_mean")
+                if mean_total is None:
+                    continue
+
+                variance_scalar = self.DEFAULT_VARIANCE_SCALARS.get(self.league, 1.0)
+                sigma = 15.0 * variance_scalar
+                model_over_prob = self._total_over_probability(mean_total, line, sigma)
+                model_under_prob = 1.0 - model_over_prob
+
+                over_odds = record.get('over_odds')
+                under_odds = record.get('under_odds')
+                market_over_prob = self._implied_prob_from_odds(over_odds) or 0.5
+                market_under_prob = self._implied_prob_from_odds(under_odds) or (1.0 - market_over_prob)
+
+                over_edge = model_over_prob - market_over_prob
+                under_edge = model_under_prob - market_under_prob
+
+                if over_edge >= under_edge:
+                    edge = over_edge
+                    model_prob = model_over_prob
+                    market_prob = market_over_prob
+                    outcome = 0.5 if push else (1.0 if over_hit else 0.0)
+                    odds_prob = market_over_prob
+                else:
+                    edge = under_edge
+                    model_prob = model_under_prob
+                    market_prob = market_under_prob
+                    outcome = 0.5 if push else (0.0 if over_hit else 1.0)
+                    odds_prob = market_under_prob
+
+                if edge >= threshold:
+                    stake = 1.0
+                    if push:
+                        profit = 0.0
+                    else:
+                        profit = stake * (1.0 / odds_prob - 1.0) if outcome == 1.0 else -stake
+
+                    bets.append({
+                        'edge': edge,
+                        'prob': model_prob,
+                        'model_prob': model_prob,
+                        'market_prob': market_prob,
                         'outcome': outcome,
                         'stake': stake,
                         'profit': profit
