@@ -48,6 +48,7 @@ from dataclasses import dataclass, asdict
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.db_manager import DatabaseManager
+from core.calibration_diagnostics import analyze_edge_correlation
 
 # Configure logging
 logging.basicConfig(
@@ -92,6 +93,7 @@ class CalibrationPack:
     probability_transforms: Dict[str, Any]
     metrics: Dict[str, Any]
     reliability_bins: List[Dict[str, Any]]
+    diagnostics: Optional[Dict[str, Any]] = None
     notes: List[str]
     
     def to_dict(self) -> Dict[str, Any]:
@@ -328,14 +330,14 @@ class CalibrationRunner:
         
         return best_threshold
     
-    def _evaluate_threshold(
+    def _generate_bets(
         self,
         market_data: List[Dict[str, Any]],
         threshold: float,
         market_type: str
-    ) -> CalibrationMetrics:
+    ) -> List[Dict[str, Any]]:
         """
-        Evaluate a specific edge threshold.
+        Generate simulated bets for a specific edge threshold.
         
         Args:
             market_data: Market calibration data
@@ -343,7 +345,7 @@ class CalibrationRunner:
             market_type: Market type
             
         Returns:
-            Calibration metrics
+            List of bet records
         """
         bets = []
         
@@ -411,6 +413,27 @@ class CalibrationRunner:
                         'stake': stake,
                         'profit': profit
                     })
+        
+        return bets
+
+    def _evaluate_threshold(
+        self,
+        market_data: List[Dict[str, Any]],
+        threshold: float,
+        market_type: str
+    ) -> CalibrationMetrics:
+        """
+        Evaluate a specific edge threshold.
+        
+        Args:
+            market_data: Market calibration data
+            threshold: Edge threshold to evaluate
+            market_type: Market type
+            
+        Returns:
+            Calibration metrics
+        """
+        bets = self._generate_bets(market_data, threshold, market_type)
         
         return self._calculate_metrics(bets)
     
@@ -547,12 +570,14 @@ class CalibrationRunner:
         
         return bins
     
-    def run_backtest(self) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]]]:
+    def run_backtest(
+        self
+    ) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]], Optional[Dict[str, Any]]]:
         """
         Run full backtesting pipeline.
         
         Returns:
-            Tuple of (edge_thresholds, metrics, reliability_bins)
+            Tuple of (edge_thresholds, metrics, reliability_bins, diagnostics)
         """
         logger.info("\n" + "="*60)
         logger.info("STARTING BACKTEST CALIBRATION")
@@ -589,7 +614,9 @@ class CalibrationRunner:
             market_data = [r for r in test_calibration if r['market_type'] == market_type]
             threshold = edge_thresholds[market_type]
             
-            metrics = self._evaluate_threshold(market_data, threshold, market_type)
+            market_bets = self._generate_bets(market_data, threshold, market_type)
+            metrics = self._calculate_metrics(market_bets)
+            all_bets.extend(market_bets)
             
             logger.info(f"\n{market_type.upper()} Results:")
             logger.info(f"  Threshold: {threshold:.3f}")
@@ -606,6 +633,18 @@ class CalibrationRunner:
         
         # Step 6: Aggregate metrics
         aggregate_metrics = self._calculate_metrics(all_bets)
+        diagnostics = analyze_edge_correlation(all_bets)
+        if diagnostics:
+            logger.info("\nEdge correlation diagnostics:")
+            logger.info(
+                "  Spearman (edge vs outcome): %s",
+                f"{diagnostics['spearman_correlation']:.3f}"
+                if diagnostics.get('spearman_correlation') is not None
+                else "n/a"
+            )
+            logger.info("  Bias: %s", diagnostics.get('bias_label', 'n/a'))
+            logger.info("  Mean implied prob: %.3f", diagnostics.get('mean_implied_prob', 0.0))
+            logger.info("  Mean outcome: %.3f", diagnostics.get('mean_outcome', 0.0))
         
         logger.info("\n" + "="*60)
         logger.info("BACKTEST COMPLETE")
@@ -618,13 +657,14 @@ class CalibrationRunner:
         logger.info(f"Brier Score: {aggregate_metrics.brier_score:.4f}")
         logger.info("="*60 + "\n")
         
-        return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins
+        return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins, diagnostics
     
     def generate_calibration_pack(
         self,
         edge_thresholds: Dict[str, float],
         metrics: Dict[str, Any],
         reliability_bins: List[Dict[str, Any]],
+        diagnostics: Optional[Dict[str, Any]] = None,
         output_path: Optional[str] = None
     ) -> CalibrationPack:
         """
@@ -666,6 +706,7 @@ class CalibrationRunner:
             },
             metrics=metrics,
             reliability_bins=reliability_bins,
+            diagnostics=diagnostics,
             notes=[
                 f"Calibrated on {self.league} historical data",
                 f"Training period: {self.start_date} to {self.train_end_date}",
@@ -761,7 +802,7 @@ Examples:
     )
     
     # Run backtest
-    edge_thresholds, metrics, reliability_bins = runner.run_backtest()
+    edge_thresholds, metrics, reliability_bins, diagnostics = runner.run_backtest()
     
     # Generate calibration pack
     if args.output or not args.dry_run:
@@ -774,6 +815,7 @@ Examples:
             edge_thresholds,
             metrics,
             reliability_bins,
+            diagnostics,
             output_path
         )
         
