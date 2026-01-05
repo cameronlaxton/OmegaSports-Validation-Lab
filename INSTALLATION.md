@@ -74,30 +74,7 @@ python -c "import pandas, numpy, scipy; print('✓ Core dependencies installed')
 
 ### 4. Configure Environment Variables
 
-Create a `.env` file in the project root:
-
-```bash
-# Create .env file
-cat > .env << 'EOF'
-# OmegaSports Engine Integration
-OMEGA_ENGINE_PATH=../OmegaSportsAgent
-
-# Optional API Keys (if using external data sources)
-PERPLEXITY_API_KEY=your_key_here
-BALLDONTLIE_API_KEY=your_key_here
-THE_ODDS_API_KEY=your_key_here
-
-# Lab Configuration
-LAB_LOG_LEVEL=INFO
-LAB_OUTPUT_FORMAT=json
-LAB_PARALLEL_EXECUTION=true
-
-# Data Paths
-DATA_HISTORICAL_PATH=./data/historical
-DATA_EXPERIMENTS_PATH=./data/experiments
-DATA_LOGS_PATH=./data/logs
-DATA_CACHE_PATH=./data/cache
-EOF
+Ensure .env file exists
 ```
 
 ### 5. Initialize Project Structure

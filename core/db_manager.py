@@ -914,44 +914,43 @@ class DatabaseManager:
         
         query = """
             SELECT 
-                pp.prop_id,
-                pp.game_id,
-                pp.date,
-                pp.player_name,
-                pp.prop_type,
-                pp.actual_value,
-                ppo.bookmaker,
-                ppo.line AS market_expectation,
-                ppo.over_odds,
-                ppo.under_odds,
-                ppo.timestamp AS market_snapshot_time,
+                prop_id,
+                game_id,
+                date,
+                player_name,
+                prop_type,
+                actual_value,
+                bookmaker,
+                over_line AS market_expectation,
+                over_odds,
+                under_odds,
+                created_at AS market_snapshot_time,
                 CASE 
-                    WHEN pp.actual_value > ppo.line THEN 'OVER'
-                    WHEN pp.actual_value < ppo.line THEN 'UNDER'
+                    WHEN actual_value > over_line THEN 'OVER'
+                    WHEN actual_value < over_line THEN 'UNDER'
                     ELSE 'PUSH'
                 END AS result
-            FROM player_props pp
-            JOIN player_props_odds ppo 
-                ON pp.game_id = ppo.game_id 
-                AND pp.player_name = ppo.player_name 
-                AND pp.prop_type = ppo.prop_type
-            WHERE pp.sport = ?
-                AND pp.date >= ?
-                AND pp.date <= ?
-                AND pp.actual_value IS NOT NULL
+            FROM player_props
+            WHERE sport = ?
+                AND date >= ?
+                AND date <= ?
+                AND actual_value IS NOT NULL
+                AND over_line IS NOT NULL
+                AND over_odds IS NOT NULL
+                AND under_odds IS NOT NULL
         """
         
         params = [sport, start_date, end_date]
         
         if prop_type:
-            query += " AND pp.prop_type = ?"
+            query += " AND prop_type = ?"
             params.append(prop_type)
         
         if player_name:
-            query += " AND pp.player_name = ?"
+            query += " AND player_name = ?"
             params.append(player_name)
         
-        query += " ORDER BY pp.date, pp.player_name"
+        query += " ORDER BY date, player_name"
         
         cursor.execute(query, params)
         

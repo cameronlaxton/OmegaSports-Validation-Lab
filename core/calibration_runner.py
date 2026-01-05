@@ -43,7 +43,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Any, Optional
 import numpy as np
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -102,7 +102,7 @@ class CalibrationPack:
     metrics: Dict[str, Any]
     reliability_bins: List[Dict[str, Any]]
     diagnostics: Optional[Dict[str, Any]] = None
-    notes: List[str]
+    notes: List[str] = field(default_factory=list)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -110,6 +110,8 @@ class CalibrationPack:
     
     def save(self, output_path: str):
         """Save to JSON file."""
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, 'w') as f:
             json.dump(self.to_dict(), f, indent=2)
         logger.info(f"✅ Calibration pack saved to: {output_path}")
@@ -122,6 +124,14 @@ class CalibrationRunner:
     
     # Market types to calibrate
     MARKET_TYPES = ['moneyline', 'spread', 'total']
+    
+    # Player prop types to calibrate (by sport)
+    PLAYER_PROP_TYPES = {
+        'NBA': ['points', 'rebounds', 'assists'],
+        'NFL': ['passing_yards', 'rushing_yards', 'touchdowns'],
+        'NCAAB': ['points', 'rebounds', 'assists'],
+        'NCAAF': ['passing_yards', 'rushing_yards', 'touchdowns']
+    }
     
     # Default parameters (initial guesses)
     DEFAULT_EDGE_THRESHOLDS = {
@@ -276,7 +286,7 @@ class CalibrationRunner:
             sport=self.league,
             start_date=start_date,
             end_date=end_date,
-            status='final'  # Only completed games
+            status='Final'  # Only completed games (capital F)
         )
         
         logger.info(f"  Loaded {len(games):,} games")
@@ -312,6 +322,44 @@ class CalibrationRunner:
         logger.info(f"  Loaded {len(calibration_data):,} calibration records")
         
         return calibration_data
+    
+    def load_player_prop_calibration_data(
+        self,
+        start_date: str,
+        end_date: str,
+        prop_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Load player prop calibration data.
+        
+        Args:
+            start_date: Start date
+            end_date: End date
+            prop_type: Filter by prop type (optional)
+            
+        Returns:
+            List of player prop calibration records
+        """
+        logger.info(f"Loading player prop calibration data: {start_date} to {end_date}")
+        
+        prop_types = [prop_type] if prop_type else self.PLAYER_PROP_TYPES.get(self.league, [])
+        all_props = []
+        
+        for pt in prop_types:
+            props = self.db.get_player_prop_calibration_data(
+                sport=self.league,
+                start_date=start_date,
+                end_date=end_date,
+                prop_type=pt
+            )
+            # Add market_type field for consistency
+            for prop in props:
+                prop['market_type'] = f'player_prop_{pt}'
+            all_props.extend(props)
+        
+        logger.info(f"  Loaded {len(all_props):,} player prop calibration records")
+        
+        return all_props
     
     def validate_split(self):
         """
@@ -478,6 +526,11 @@ class CalibrationRunner:
                 if not market_result:
                     continue
                 
+                # Extract values from record
+                home_score = record.get('home_score', 0)
+                away_score = record.get('away_score', 0)
+                line = record.get('market_expectation') or record.get('spread_line', 0.0)
+                
                 margin = home_score - away_score
                 covered = margin > line
                 push = margin == line
@@ -534,7 +587,11 @@ class CalibrationRunner:
                     })
 
             elif market_type == 'total':
-                line = record.get('market_expectation', 0)
+                line = record.get('market_expectation') or record.get('total_line')
+                if line is None:
+                    continue
+                line = float(line)
+                
                 home_score = record.get('home_score', 0)
                 away_score = record.get('away_score', 0)
 
@@ -595,39 +652,79 @@ class CalibrationRunner:
                         'stake': stake,
                         'profit': profit
                     })
-
-            elif market_type == 'total':
-                market_result = self._get_market_prob_and_outcome(record, market_type)
-                if not market_result:
+            
+            elif market_type.startswith('player_prop_'):
+                # Player prop over/under bet
+                prop_type = market_type.replace('player_prop_', '')
+                line = record.get('market_expectation')
+                if line is None:
                     continue
-
-                market_prob, outcome = market_result
-                model_prob = market_prob
-                prob = model_prob
-
-                if transform:
-                    calibrated_prob = apply_platt(
-                        np.array([model_prob]),
-                        transform.get('platt_coefficients', {'a': 1.0, 'b': 0.0})
-                    )[0]
-                    prob = shrink_toward_market(
-                        np.array([calibrated_prob]),
-                        np.array([market_prob]),
-                        transform.get('shrinkage_alpha', 0.0)
-                    )[0]
-
-                edge = abs(0.5 - prob)
-
+                line = float(line)
+                
+                actual_value = record.get('actual_value')
+                if actual_value is None:
+                    continue
+                actual_value = float(actual_value)
+                
+                over_odds = record.get('over_odds')
+                under_odds = record.get('under_odds')
+                if over_odds is None or under_odds is None:
+                    continue
+                
+                # Determine outcome
+                over_hit = actual_value > line
+                push = actual_value == line
+                
+                # For player props, we need model predictions
+                # For now, use a simplified approach: assume model predicts based on historical average
+                # In production, this would come from the simulation framework
+                # TODO: Integrate with simulation framework for player prop predictions
+                
+                # Market probabilities from odds
+                market_over_prob = self._implied_prob_from_odds(over_odds) or 0.5
+                market_under_prob = self._implied_prob_from_odds(under_odds) or (1.0 - market_over_prob)
+                
+                # Simplified model probability (in production, get from simulation)
+                # For calibration, we'll use a naive approach: assume model is slightly better than market
+                # This is a placeholder - should be replaced with actual model predictions
+                model_over_prob = market_over_prob + 0.02  # Assume 2% edge potential
+                model_over_prob = max(0.01, min(0.99, model_over_prob))  # Clamp
+                model_under_prob = 1.0 - model_over_prob
+                
+                # Calculate edges
+                over_edge = model_over_prob - market_over_prob
+                under_edge = model_under_prob - market_under_prob
+                
+                # Choose side with higher edge
+                if over_edge >= under_edge:
+                    edge = over_edge
+                    model_prob = model_over_prob
+                    market_prob = market_over_prob
+                    outcome = 0.5 if push else (1.0 if over_hit else 0.0)
+                    odds_prob = market_over_prob
+                else:
+                    edge = under_edge
+                    model_prob = model_under_prob
+                    market_prob = market_under_prob
+                    outcome = 0.5 if push else (0.0 if over_hit else 1.0)
+                    odds_prob = market_under_prob
+                
                 if edge >= threshold:
                     stake = 1.0
-                    profit = stake * (1.0 / prob - 1.0) if outcome == 1.0 else -stake
-
+                    if push:
+                        profit = 0.0
+                    else:
+                        profit = stake * (1.0 / odds_prob - 1.0) if outcome == 1.0 else -stake
+                    
                     bets.append({
                         'edge': edge,
-                        'prob': prob,
+                        'prob': model_prob,
+                        'model_prob': model_prob,
+                        'market_prob': market_prob,
                         'outcome': outcome,
                         'stake': stake,
-                        'profit': profit
+                        'profit': profit,
+                        'prop_type': prop_type
                     })
         
         return bets
@@ -953,18 +1050,38 @@ class CalibrationRunner:
             self.start_date,
             self.train_end_date
         )
+        
+        # Load player prop calibration data
+        train_prop_calibration = self.load_player_prop_calibration_data(
+            self.start_date,
+            self.train_end_date
+        )
 
         # Step 3: Fit probability calibration transforms
         logger.info("\nFitting probability calibration transforms...")
         probability_transforms = self.fit_probability_transforms(train_calibration)
         
-        # Step 4: Tune edge thresholds
-        logger.info("\nTuning edge thresholds...")
+        # Step 4: Tune edge thresholds for game bets
+        logger.info("\nTuning edge thresholds (game bets)...")
         edge_thresholds = {}
         
         for market_type in self.MARKET_TYPES:
             threshold = self.tune_edge_thresholds(train_calibration, market_type)
             edge_thresholds[market_type] = threshold
+        
+        # Step 4b: Tune edge thresholds for player props
+        logger.info("\nTuning edge thresholds (player props)...")
+        prop_types = self.PLAYER_PROP_TYPES.get(self.league, [])
+        for prop_type in prop_types:
+            market_type = f'player_prop_{prop_type}'
+            prop_data = [p for p in train_prop_calibration if p.get('prop_type') == prop_type]
+            if prop_data:
+                threshold = self.tune_edge_thresholds(prop_data, market_type)
+                edge_thresholds[market_type] = threshold
+                logger.info(f"  {prop_type}: {threshold:.3f}")
+            else:
+                logger.warning(f"  No data for {prop_type}, using default threshold")
+                edge_thresholds[market_type] = self.DEFAULT_EDGE_THRESHOLDS.get('props', 0.04)
         
         # Step 5: Evaluate on test set
         logger.info("\nEvaluating on test set...")
@@ -972,9 +1089,15 @@ class CalibrationRunner:
             self.train_end_date,
             self.end_date
         )
+        test_prop_calibration = self.load_player_prop_calibration_data(
+            self.train_end_date,
+            self.end_date
+        )
         
         # Collect all test bets using tuned thresholds
         all_bets = []
+        
+        # Game bets
         for market_type in self.MARKET_TYPES:
             market_data = [r for r in test_calibration if r['market_type'] == market_type]
             threshold = edge_thresholds[market_type]
@@ -995,6 +1118,31 @@ class CalibrationRunner:
             logger.info(f"  Sharpe: {metrics.sharpe:.2f}")
             logger.info(f"  Max Drawdown: {metrics.max_drawdown:.2f} units")
             logger.info(f"  Brier Score: {metrics.brier_score:.4f}")
+        
+        # Player props
+        prop_types = self.PLAYER_PROP_TYPES.get(self.league, [])
+        for prop_type in prop_types:
+            market_type = f'player_prop_{prop_type}'
+            prop_data = [p for p in test_prop_calibration if p.get('prop_type') == prop_type]
+            if prop_data and market_type in edge_thresholds:
+                threshold = edge_thresholds[market_type]
+                
+                metrics, bets = self._evaluate_threshold(
+                    prop_data,
+                    threshold,
+                    market_type,
+                    probability_transforms
+                )
+                all_bets.extend(bets)
+                
+                logger.info(f"\nPLAYER PROP ({prop_type.upper()}) Results:")
+                logger.info(f"  Threshold: {threshold:.3f}")
+                logger.info(f"  Bets: {metrics.total_bets}")
+                logger.info(f"  Hit Rate: {metrics.hit_rate:.1%}")
+                logger.info(f"  ROI: {metrics.roi:.1%}")
+                logger.info(f"  Sharpe: {metrics.sharpe:.2f}")
+                logger.info(f"  Max Drawdown: {metrics.max_drawdown:.2f} units")
+                logger.info(f"  Brier Score: {metrics.brier_score:.4f}")
         
         # Step 6: Calculate reliability bins
         logger.info("\nCalculating reliability calibration...")

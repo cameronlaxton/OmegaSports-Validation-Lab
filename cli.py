@@ -136,7 +136,7 @@ def cmd_backtest(args):
     )
     
     # Run backtest
-    edge_thresholds, metrics, reliability_bins = runner.run_backtest()
+    edge_thresholds, metrics, reliability_bins, probability_transforms, diagnostics = runner.run_backtest()
     
     # Generate calibration pack if requested
     if args.output or not args.dry_run:
@@ -146,6 +146,8 @@ def cmd_backtest(args):
             edge_thresholds,
             metrics,
             reliability_bins,
+            probability_transforms,
+            diagnostics,
             output_path
         )
         
@@ -177,13 +179,15 @@ def cmd_generate_pack(args):
         train_split=args.train_split
     )
     
-    edge_thresholds, metrics, reliability_bins = runner.run_backtest()
+    edge_thresholds, metrics, reliability_bins, probability_transforms, diagnostics = runner.run_backtest()
     
     # Generate pack
     pack = runner.generate_calibration_pack(
         edge_thresholds,
         metrics,
         reliability_bins,
+        probability_transforms,
+        diagnostics,
         args.output
     )
     
