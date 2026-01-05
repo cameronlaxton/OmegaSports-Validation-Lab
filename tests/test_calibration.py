@@ -310,7 +310,8 @@ class TestMetricsCalculations:
             log_loss=0.69
         )
         
-        # Hit rate = winning_bets / total_bets
+        # Hit rate = winning_bets / (winning_bets + losing_bets)
+        # When there are no pushes, this is the same as winning_bets / total_bets
         expected_hit_rate = 52 / 100
         assert metrics.hit_rate == expected_hit_rate
     
