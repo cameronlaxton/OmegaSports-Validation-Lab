@@ -158,25 +158,29 @@ python scripts/test_api_integration.py
 
 ---
 
-## ⚠️ Deprecated Scripts (Do Not Use)
+## ⚠️ Deprecated Scripts (Archived)
 
-These scripts are deprecated and will be removed. They've been superseded by more robust implementations.
+**These scripts have been moved to `/archive/deprecated/` and should NOT be used.**
 
-### ❌ bulk_collect.py
-**Replaced by:** `collect_historical_sqlite.py`  
-**Reason:** Better error handling, SQLite storage, multi-threading
+All deprecated scripts have been superseded by `collect_historical_sqlite.py` which provides:
+- ✅ Unified SQLite storage (not fragmented JSON)
+- ✅ Multi-threading support with `--workers` flag
+- ✅ Crash recovery and resume capability
+- ✅ Comprehensive error handling and validation
+- ✅ Single script instead of 5+ overlapping scripts
 
-### ❌ collect_games_only.py
-**Replaced by:** `collect_historical_sqlite.py`  
-**Reason:** More comprehensive data collection, better validation
+### Archived Scripts:
+- ❌ `bulk_collect.py` → Moved to archive
+- ❌ `collect_games_only.py` → Moved to archive
+- ❌ `collect_historical_5years.py` → Moved to archive
+- ❌ `collect_historical_odds.py` → Moved to archive
+- ❌ `collect_all_seasons.py` → Moved to archive
+- ❌ `collect_data.py` → Moved to archive
+- ❌ `run_collection_*.sh` → Moved to archive
+- ❌ `monitor_collection.sh` → Moved to archive
+- ❌ `check_collection_status.sh` → Moved to archive
 
-### ❌ collect_historical_5years.py
-**Replaced by:** `collect_historical_sqlite.py`  
-**Reason:** Cleaner code, unified storage, better progress tracking
-
-### ❌ collect_historical_odds.py
-**Replaced by:** `collect_historical_sqlite.py` (integrated)  
-**Reason:** Odds collection now integrated into main script
+**See:** `/archive/deprecated/README.md` for full details and rollback instructions if needed.
 
 ---
 
