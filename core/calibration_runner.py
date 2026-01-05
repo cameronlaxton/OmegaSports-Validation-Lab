@@ -339,13 +339,9 @@ class CalibrationRunner:
         self,
         market_data: List[Dict[str, Any]],
         threshold: float,
-        market_type: str
-    ) -> List[Dict[str, Any]]:
         market_type: str,
         probability_transforms: Optional[Dict[str, Any]] = None
-    ) -> CalibrationMetrics:
-        market_type: str
-    ) -> Tuple[CalibrationMetrics, List[Dict[str, Any]]]:
+    ) -> List[Dict[str, Any]]:
         """
         Generate simulated bets for a specific edge threshold.
         
@@ -353,10 +349,10 @@ class CalibrationRunner:
             market_data: Market calibration data
             threshold: Edge threshold to evaluate
             market_type: Market type
+            probability_transforms: Optional probability transforms to apply
             
         Returns:
             List of bet records
-            Tuple of (calibration metrics, bet records)
         """
         bets = []
         transform = None
@@ -482,8 +478,9 @@ class CalibrationRunner:
         self,
         market_data: List[Dict[str, Any]],
         threshold: float,
-        market_type: str
-    ) -> CalibrationMetrics:
+        market_type: str,
+        probability_transforms: Optional[Dict[str, Any]] = None
+    ) -> Tuple[CalibrationMetrics, List[Dict[str, Any]]]:
         """
         Evaluate a specific edge threshold.
         
@@ -491,13 +488,13 @@ class CalibrationRunner:
             market_data: Market calibration data
             threshold: Edge threshold to evaluate
             market_type: Market type
+            probability_transforms: Optional probability transforms to apply
             
         Returns:
-            Calibration metrics
+            Tuple of (calibration metrics, bet records)
         """
-        bets = self._generate_bets(market_data, threshold, market_type)
+        bets = self._generate_bets(market_data, threshold, market_type, probability_transforms)
         
-        return self._calculate_metrics(bets)
         return self._calculate_metrics(bets), bets
     
     def _american_to_prob(self, american_odds: int) -> float:
@@ -774,13 +771,11 @@ class CalibrationRunner:
     def run_backtest(
         self
     ) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]], Optional[Dict[str, Any]]]:
-    ) -> Tuple[Dict[str, float], Dict[str, Any], List[Dict[str, Any]], Dict[str, Any]]:
         """
         Run full backtesting pipeline.
         
         Returns:
             Tuple of (edge_thresholds, metrics, reliability_bins, diagnostics)
-            Tuple of (edge_thresholds, metrics, reliability_bins, probability_transforms)
         """
         logger.info("\n" + "="*60)
         logger.info("STARTING BACKTEST CALIBRATION")
@@ -821,16 +816,12 @@ class CalibrationRunner:
             market_data = [r for r in test_calibration if r['market_type'] == market_type]
             threshold = edge_thresholds[market_type]
             
-            market_bets = self._generate_bets(market_data, threshold, market_type)
-            metrics = self._calculate_metrics(market_bets)
-            all_bets.extend(market_bets)
-            metrics = self._evaluate_threshold(
+            metrics, bets = self._evaluate_threshold(
                 market_data,
                 threshold,
                 market_type,
                 probability_transforms
             )
-            metrics, bets = self._evaluate_threshold(market_data, threshold, market_type)
             all_bets.extend(bets)
             
             logger.info(f"\n{market_type.upper()} Results:")
@@ -873,7 +864,6 @@ class CalibrationRunner:
         logger.info("="*60 + "\n")
         
         return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins, diagnostics
-        return edge_thresholds, aggregate_metrics.to_dict(), reliability_bins, probability_transforms
     
     def generate_calibration_pack(
         self,
@@ -881,7 +871,6 @@ class CalibrationRunner:
         metrics: Dict[str, Any],
         reliability_bins: List[Dict[str, Any]],
         diagnostics: Optional[Dict[str, Any]] = None,
-        probability_transforms: Dict[str, Any],
         output_path: Optional[str] = None
     ) -> CalibrationPack:
         """
@@ -917,10 +906,7 @@ class CalibrationRunner:
             edge_thresholds=edge_thresholds,
             variance_scalars=self.DEFAULT_VARIANCE_SCALARS,
             kelly_policy=self.DEFAULT_KELLY_POLICY,
-            probability_transforms={
-                'method': 'platt+shrink',
-                'markets': probability_transforms
-            },
+            probability_transforms={},
             metrics=metrics,
             reliability_bins=reliability_bins,
             diagnostics=diagnostics,
@@ -1020,7 +1006,6 @@ Examples:
     
     # Run backtest
     edge_thresholds, metrics, reliability_bins, diagnostics = runner.run_backtest()
-    edge_thresholds, metrics, reliability_bins, probability_transforms = runner.run_backtest()
     
     # Generate calibration pack
     if args.output or not args.dry_run:
@@ -1034,7 +1019,6 @@ Examples:
             metrics,
             reliability_bins,
             diagnostics,
-            probability_transforms,
             output_path
         )
         
