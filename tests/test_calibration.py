@@ -361,12 +361,12 @@ class TestMetricsCalculations:
     def test_metrics_with_pushes(self):
         """Test that pushes are correctly excluded from hit rate calculation."""
         # 50 wins, 40 losses, 10 pushes = 100 total bets
-        # Hit rate should be 50 / (50 + 40) = 0.556, NOT 50 / 100 = 0.5
+        # Hit rate should be 50 / (50 + 40) = 0.5556, NOT 50 / 100 = 0.5
         metrics = CalibrationMetrics(
             roi=0.02,
             sharpe=0.8,
             max_drawdown=5.0,
-            hit_rate=0.556,
+            hit_rate=0.5556,
             total_bets=100,
             winning_bets=50,
             losing_bets=40,
