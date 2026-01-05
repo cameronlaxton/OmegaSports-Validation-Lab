@@ -739,7 +739,78 @@ def main():
         help='Export to JSON file after collection (legacy compatibility)'
     )
     
+    parser.add_argument(
+        '--allow-collection',
+        action='store_true',
+        help='Allow historical collection (data already exists; use only if needed)'
+    )
+    
+    parser.add_argument(
+        '--status',
+        action='store_true',
+        help='Show database status and exit (no collection)'
+    )
+    
     args = parser.parse_args()
+    
+    # Status mode - just show what we have and exit
+    if args.status:
+        from core.db_manager import DatabaseManager
+        db = DatabaseManager(args.db)
+        stats = db.get_stats()
+        
+        print("\n" + "="*60)
+        print("DATABASE STATUS")
+        print("="*60)
+        print(f"Database: {args.db}")
+        print(f"Games:                {stats.get('games', 0):,}")
+        print(f"Player Props:         {stats.get('player_props', 0):,}")
+        print(f"Odds History:         {stats.get('odds_history', 0):,}")
+        print(f"Player Props Odds:    {stats.get('player_props_odds', 0):,}")
+        print(f"Perplexity Cache:     {stats.get('perplexity_cache', 0):,}")
+        print("="*60)
+        
+        # Check date range
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT sport, MIN(date) as earliest, MAX(date) as latest, COUNT(*) FROM games GROUP BY sport")
+        rows = cursor.fetchall()
+        
+        if rows:
+            print("\nDATA COVERAGE:")
+            for row in rows:
+                sport, earliest, latest, count = row
+                print(f"  {sport}: {count:,} games ({earliest} to {latest})")
+        else:
+            print("\n⚠️  No data found in database")
+        
+        print("\n" + "="*60)
+        sys.exit(0)
+    
+    # Safety check - prevent accidental re-collection
+    if not args.allow_collection:
+        from core.db_manager import DatabaseManager
+        db = DatabaseManager(args.db)
+        stats = db.get_stats()
+        
+        if stats.get('games', 0) > 1000:
+            print("\n" + "="*60)
+            print("⚠️  COLLECTION DISABLED - DATA ALREADY EXISTS")
+            print("="*60)
+            print(f"\nDatabase: {args.db}")
+            print(f"Games:    {stats.get('games', 0):,}")
+            print("\nHistorical data collection is COMPLETE.")
+            print("Re-downloading historical data is:")
+            print("  • Wasteful (time + API quota)")
+            print("  • Unnecessary (data already exists)")
+            print("  • Potentially destructive (could overwrite data)")
+            print("\nIf you really need to collect data:")
+            print("  1. Use --status to check what you have")
+            print("  2. Use --allow-collection flag to override this safety")
+            print("  3. Consider using --resume to fill gaps only")
+            print("\nRecommended: Use existing data for calibration pipeline")
+            print("="*60 + "\n")
+            sys.exit(1)
     
     # Parse years
     if '-' in args.years:
